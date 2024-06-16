@@ -5,6 +5,7 @@ using UnityEngine.UI;
 
 namespace TarasK8.UI
 {
+    [AddComponentMenu("Optimized UI/Selectable")]
     public class Selectable : UnityEngine.UI.Selectable, IPointerClickHandler, IPointerDownHandler, IPointerUpHandler, IPointerEnterHandler, IPointerExitHandler, ISubmitHandler
     {
         [SerializeField] private TransitionType _transitionType;

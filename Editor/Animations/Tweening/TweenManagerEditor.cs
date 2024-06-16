@@ -2,7 +2,7 @@ using TarasK8.UI.Animations.Tweening;
 using UnityEditor;
 using UnityEngine;
 
-namespace TarasK8.OptimizedUIEditor.Animations.Tweening
+namespace TarasK8.UIEditor.Animations.Tweening
 {
     [CustomEditor(typeof(TweenManager))]
     public class TweenManagerEditor : Editor

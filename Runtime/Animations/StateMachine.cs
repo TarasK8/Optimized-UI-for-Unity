@@ -6,6 +6,7 @@ using UnityEngine;
 
 namespace TarasK8.UI.Animations
 {
+    [AddComponentMenu("Optimized UI/Animation/State Machine")]
     public class StateMachine : MonoBehaviour
     {
         public const string FULLY_COMPLATE_FIELD_NAME = nameof(_fullyComplateTransition);

@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace TarasK8.UI.Layout
 {
+    [AddComponentMenu("Optimized UI/Layout/Flex Layout Element")]
     [DisallowMultipleComponent]
     [ExecuteAlways]
     [RequireComponent(typeof(RectTransform))]
