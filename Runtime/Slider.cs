@@ -6,6 +6,7 @@ using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using TMPro;
+using Unity.VisualScripting.YamlDotNet.Core.Tokens;
 
 namespace TarasK8.UI
 {
@@ -121,7 +122,7 @@ namespace TarasK8.UI
             {
                 if (Mathf.Approximately(MinValue, MaxValue))
                     return 0;
-                return Mathf.InverseLerp(MinValue, MaxValue, Value);
+                return Mathf.InverseLerp(MinValue, MaxValue, _value);
             }
             set
             {
@@ -130,15 +131,10 @@ namespace TarasK8.UI
         }
         public virtual float Value
         {
-            get
-            {
-                return _value;
-            }
-            set
-            {
-                Set(value);
-            }
+            get => _value;
+            set => Set(value);
         }
+        public float CurvedValue => Mathf.Lerp(MinValue, MaxValue, _curve.Evaluate(NormalizedValue));
         public float ValueStep
         {
             get
@@ -150,7 +146,11 @@ namespace TarasK8.UI
                 _step = value;
             }
         }
-        public SliderEvent OnValueChanged { get => _onValueChanged; set => _onValueChanged = value; }
+        public SliderEvent OnValueChanged
+        {
+            get => _onValueChanged;
+            set => _onValueChanged = value;
+        }
 
 #if UNITY_EDITOR
         protected override void OnValidate()
@@ -228,137 +228,11 @@ namespace TarasK8.UI
             if (oldNormalizedValue != NormalizedValue)
             {
                 UISystemProfilerApi.AddMarker("Slider.value", this);
-                OnValueChanged.Invoke(_value);
+                OnValueChanged.Invoke(CurvedValue);
             }
             // UUM-34170 Apparently, some properties on slider such as IsInteractable and Normalcolor Animation is broken.
             // We need to call base here to render the animation on Scene
             base.OnDidApplyAnimationProperties();
-        }
-
-        public virtual void SetValueWithoutNotify(float input)
-        {
-            Set(input, false);
-        }
-
-        private void UpdateCachedReferences()
-        {
-            if (_fillRect && _fillRect != (RectTransform)transform)
-            {
-                _fillTransform = _fillRect.transform;
-                _fillImage = _fillRect.GetComponent<Image>();
-                if (_fillTransform.parent != null)
-                    _fillContainerRect = _fillTransform.parent.GetComponent<RectTransform>();
-            }
-            else
-            {
-                _fillRect = null;
-                _fillContainerRect = null;
-                _fillImage = null;
-            }
-
-            if (_handleRect && _handleRect != (RectTransform)transform)
-            {
-                _handleTransform = _handleRect.transform;
-                if (_handleTransform.parent != null)
-                    _handleContainerRect = _handleTransform.parent.GetComponent<RectTransform>();
-            }
-            else
-            {
-                _handleRect = null;
-                _handleContainerRect = null;
-            }
-        }
-
-        private float ClampValue(float input)
-        {
-            float newValue = Mathf.Clamp(input, MinValue, MaxValue);
-            if (Mathf.Approximately(ValueStep, 0f) == false)
-                newValue = Snapping.Snap(newValue, ValueStep);
-            return newValue;
-        }
-
-        protected virtual void Set(float input, bool sendCallback = true)
-        {
-            // Clamp the input
-            float newValue = ClampValue(input);
-
-            // If the stepped value doesn't match the last one, it's time to update
-            if (_value == newValue)
-                return;
-
-            _value = newValue;
-            UpdateVisuals();
-            if (sendCallback)
-            {
-                UISystemProfilerApi.AddMarker("Slider.value", this);
-                _onValueChanged.Invoke(newValue);
-            }
-        }
-
-        private void UpdateVisuals()
-        {
-#if UNITY_EDITOR
-            if (!Application.isPlaying)
-                UpdateCachedReferences();
-#endif
-
-            _tracker.Clear();
-
-            if (_fillContainerRect != null)
-            {
-                _tracker.Add(this, _fillRect, DrivenTransformProperties.Anchors);
-                Vector2 anchorMin = Vector2.zero;
-                Vector2 anchorMax = Vector2.one;
-
-                if (_fillImage != null && _fillImage.type == Image.Type.Filled)
-                {
-                    _fillImage.fillAmount = NormalizedValue;
-                }
-                else
-                {
-                    if (_reverseValue)
-                        anchorMin[(int)_axis] = 1 - NormalizedValue;
-                    else
-                        anchorMax[(int)_axis] = NormalizedValue;
-                }
-
-                _fillRect.anchorMin = anchorMin;
-                _fillRect.anchorMax = anchorMax;
-            }
-
-            if (_handleContainerRect != null)
-            {
-                _tracker.Add(this, _handleRect, DrivenTransformProperties.Anchors);
-                Vector2 anchorMin = Vector2.zero;
-                Vector2 anchorMax = Vector2.one;
-                anchorMin[(int)_axis] = anchorMax[(int)_axis] = (_reverseValue ? (1 - NormalizedValue) : NormalizedValue);
-                _handleRect.anchorMin = anchorMin;
-                _handleRect.anchorMax = anchorMax;
-            }
-        }
-
-        private void UpdateDrag(PointerEventData eventData, Camera cam)
-        {
-            RectTransform clickRect = _handleContainerRect ?? _fillContainerRect;
-            if (clickRect != null && clickRect.rect.size[(int)_axis] > 0)
-            {
-                Vector2 position = Vector2.zero;
-                if (! MultipleDisplayUtilities.GetRelativeMousePositionForDrag(eventData, ref position))
-                    return;
-
-                Vector2 localCursor;
-                if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(clickRect, position, cam, out localCursor))
-                    return;
-                localCursor -= clickRect.rect.position;
-
-                float val = Mathf.Clamp01((localCursor - _offset)[(int)_axis] / clickRect.rect.size[(int)_axis]);
-                NormalizedValue = (_reverseValue ? 1f - val : val);
-            }
-        }
-
-        private bool MayDrag(PointerEventData eventData)
-        {
-            return IsActive() && IsInteractable() && eventData.button == PointerEventData.InputButton.Left;
         }
 
         public override void OnPointerDown(PointerEventData eventData)
@@ -372,7 +246,7 @@ namespace TarasK8.UI
 
             if (_magnetToCursor == false)
             {
-                _offset = eventData.pointerPressRaycast.screenPosition - ((Vector2)_handleRect.position);
+                _offset = eventData.pointerPressRaycast.screenPosition - (Vector2)_handleRect.position;
             }
             else if (_handleContainerRect is not null && RectTransformUtility.RectangleContainsScreenPoint(_handleRect, eventData.pointerPressRaycast.screenPosition, eventData.enterEventCamera))
             {
@@ -385,6 +259,11 @@ namespace TarasK8.UI
                 // Outside the slider handle - jump to this point instead
                 UpdateDrag(eventData, eventData.pressEventCamera);
             }
+        }
+
+        public virtual void OnInitializePotentialDrag(PointerEventData eventData)
+        {
+            eventData.useDragThreshold = false;
         }
 
         public virtual void OnDrag(PointerEventData eventData)
@@ -431,6 +310,22 @@ namespace TarasK8.UI
             }
         }
 
+        public void SetDirection(Direction direction, bool includeRectLayouts)
+        {
+            Axis oldAxis = _axis;
+            bool oldReverse = _reverseValue;
+            this.HandleDirection = direction;
+
+            if (!includeRectLayouts)
+                return;
+
+            if (_axis != oldAxis)
+                RectTransformUtility.FlipLayoutAxes(transform as RectTransform, true, true);
+
+            if (_reverseValue != oldReverse)
+                RectTransformUtility.FlipLayoutOnAxis(transform as RectTransform, (int)_axis, true, true);
+        }
+
         public override UnityEngine.UI.Selectable FindSelectableOnLeft()
         {
             if (navigation.mode == Navigation.Mode.Automatic && _axis == Axis.Horizontal)
@@ -459,25 +354,132 @@ namespace TarasK8.UI
             return base.FindSelectableOnDown();
         }
 
-        public virtual void OnInitializePotentialDrag(PointerEventData eventData)
+        private void UpdateVisuals()
         {
-            eventData.useDragThreshold = false;
+#if UNITY_EDITOR
+            if (!Application.isPlaying)
+                UpdateCachedReferences();
+#endif
+
+            _tracker.Clear();
+
+            float normalizedValue = NormalizedValue;
+
+            if (_fillContainerRect != null)
+            {
+                _tracker.Add(this, _fillRect, DrivenTransformProperties.Anchors);
+                Vector2 anchorMin = Vector2.zero;
+                Vector2 anchorMax = Vector2.one;
+
+                if (_fillImage != null && _fillImage.type == Image.Type.Filled)
+                {
+                    _fillImage.fillAmount = normalizedValue;
+                }
+                else
+                {
+                    if (_reverseValue)
+                        anchorMin[(int)_axis] = 1 - normalizedValue;
+                    else
+                        anchorMax[(int)_axis] = normalizedValue;
+                }
+
+                _fillRect.anchorMin = anchorMin;
+                _fillRect.anchorMax = anchorMax;
+            }
+
+            if (_handleContainerRect != null)
+            {
+                _tracker.Add(this, _handleRect, DrivenTransformProperties.Anchors);
+                Vector2 anchorMin = Vector2.zero;
+                Vector2 anchorMax = Vector2.one;
+                anchorMin[(int)_axis] = anchorMax[(int)_axis] = (_reverseValue ? (1 - normalizedValue) : normalizedValue);
+                _handleRect.anchorMin = anchorMin;
+                _handleRect.anchorMax = anchorMax;
+            }
+
+            if(_text is not null)
+            {
+                _text.text = string.IsNullOrWhiteSpace(_format) ? CurvedValue.ToString() : string.Format(_format, CurvedValue);
+            }
         }
 
-        public void SetDirection(Direction direction, bool includeRectLayouts)
+        private void UpdateDrag(PointerEventData eventData, Camera cam)
         {
-            Axis oldAxis = _axis;
-            bool oldReverse = _reverseValue;
-            this.HandleDirection = direction;
+            RectTransform clickRect = _handleContainerRect ?? _fillContainerRect;
+            if (clickRect != null && clickRect.rect.size[(int)_axis] > 0)
+            {
+                Vector2 position = Vector2.zero;
+                if (! MultipleDisplayUtilities.GetRelativeMousePositionForDrag(eventData, ref position))
+                    return;
 
-            if (!includeRectLayouts)
+                Vector2 localCursor;
+                if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(clickRect, position, cam, out localCursor))
+                    return;
+                localCursor -= clickRect.rect.position;
+
+                float val = Mathf.Clamp01((localCursor - _offset)[(int)_axis] / clickRect.rect.size[(int)_axis]);
+                NormalizedValue = (_reverseValue ? 1f - val : val);
+            }
+        }
+
+        private void UpdateCachedReferences()
+        {
+            if (_fillRect && _fillRect != (RectTransform)transform)
+            {
+                _fillTransform = _fillRect.transform;
+                _fillImage = _fillRect.GetComponent<Image>();
+                if (_fillTransform.parent != null)
+                    _fillContainerRect = _fillTransform.parent.GetComponent<RectTransform>();
+            }
+            else
+            {
+                _fillRect = null;
+                _fillContainerRect = null;
+                _fillImage = null;
+            }
+
+            if (_handleRect && _handleRect != (RectTransform)transform)
+            {
+                _handleTransform = _handleRect.transform;
+                if (_handleTransform.parent != null)
+                    _handleContainerRect = _handleTransform.parent.GetComponent<RectTransform>();
+            }
+            else
+            {
+                _handleRect = null;
+                _handleContainerRect = null;
+            }
+        }
+
+        private float ClampValue(float input)
+        {
+            float newValue = Mathf.Clamp(input, MinValue, MaxValue);
+            if (Mathf.Approximately(ValueStep, 0f) == false)
+                newValue = Snapping.Snap(newValue, ValueStep);
+            return newValue;
+        }
+
+        private bool MayDrag(PointerEventData eventData)
+        {
+            return IsActive() && IsInteractable() && eventData.button == PointerEventData.InputButton.Left;
+        }
+
+        protected virtual void Set(float input, bool sendCallback = true)
+        {
+            // Clamp the input
+            float newValue = ClampValue(input);
+
+            // If the stepped value doesn't match the last one, it's time to update
+            if (_value == newValue)
                 return;
 
-            if (_axis != oldAxis)
-                RectTransformUtility.FlipLayoutAxes(transform as RectTransform, true, true);
-
-            if (_reverseValue != oldReverse)
-                RectTransformUtility.FlipLayoutOnAxis(transform as RectTransform, (int)_axis, true, true);
+            _value = newValue;
+            UpdateVisuals();
+            if (sendCallback)
+            {
+                UISystemProfilerApi.AddMarker("Slider.value", this);
+                OnValueChanged.Invoke(CurvedValue);
+            }
         }
 
         [Serializable]
