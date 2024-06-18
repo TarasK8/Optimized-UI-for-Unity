@@ -22,7 +22,7 @@ namespace TarasK8.UI.Animations.Tweening
                 tween.Update(Time.deltaTime);
             }
 
-            _activeTweens.RemoveAll(t => t.IsComplete);
+            _activeTweens.RemoveAll(t => t.IsCompleted);
         }
 
         public static List<Tween> GetActiveTweens()
