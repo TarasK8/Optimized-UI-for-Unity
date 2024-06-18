@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace TarasK8.UI.Animations.Tweening
 {
     [System.Serializable]
@@ -6,13 +8,13 @@ namespace TarasK8.UI.Animations.Tweening
         public abstract float Delay { get; protected set; }
         public abstract float Duration { get; protected set; }
         public float ElapsedTime { get; private set; }
-        public bool IsComplete { get; private set; }
+        public bool IsCompleted { get; private set; }
         public bool IsStarted { get; private set; }
         public float Progress => (ElapsedTime - Delay) / Duration;
 
         public void Update(float deltaTime)
         {
-            if (IsComplete) return;
+            if (IsCompleted) return;
 
             ElapsedTime += deltaTime;
 
@@ -27,6 +29,10 @@ namespace TarasK8.UI.Animations.Tweening
             }
             if (ElapsedTime - Delay >= Duration)
             {
+                if(Mathf.Approximately(Duration, 0f))
+                {
+                    Process(1f);
+                }
                 Complate();
             }
             else
@@ -37,12 +43,12 @@ namespace TarasK8.UI.Animations.Tweening
 
         public void Complate()
         {
-            IsComplete = true;
+            IsCompleted = true;
         }
 
         public virtual void Reset()
         {
-            IsComplete = false;
+            IsCompleted = false;
             IsStarted = false;
             ElapsedTime = 0f;
         }

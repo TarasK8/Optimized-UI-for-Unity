@@ -9,6 +9,7 @@ namespace TarasK8.UI.Animations.Transitions
     {
         [SerializeField] private float _duration = 0.2f;
         [SerializeField] private float _delay = 0f;
+        [SerializeField] public Easing _easing;
         [SerializeField] private Graphic _targetGraphic;
 
         private Data _data;
@@ -25,7 +26,7 @@ namespace TarasK8.UI.Animations.Transitions
 
         public override void Process(float t)
         {
-            float lerp = _data.Easing.Evaluate(t);
+            float lerp = _easing.Evaluate(t);
             _targetGraphic.color = UnityEngine.Color.LerpUnclamped(_current, _data.Color, lerp);
         }
 
@@ -34,7 +35,6 @@ namespace TarasK8.UI.Animations.Transitions
         {
             [field: SerializeField] public string Name { get; set; }
             [SerializeField] public UnityEngine.Color Color = UnityEngine.Color.white;
-            [SerializeField] public Easing Easing;
         }
     }
 }

@@ -14,6 +14,7 @@ namespace TarasK8.UI
 
         private bool _isHover, _isPressed, _isSelected;
 
+#if UNITY_EDITOR
         protected override void OnValidate()
         {
             base.OnValidate();
@@ -23,6 +24,7 @@ namespace TarasK8.UI
                 //Debug.Log("The classic transition cannot be used here");
             }
         }
+#endif
 
         protected override void Awake()
         {
@@ -94,7 +96,7 @@ namespace TarasK8.UI
 
         private void Click()
         {
-            Debug.Log("Click");
+            //Debug.Log("Click");
         }
 
         private void UpdateState()
