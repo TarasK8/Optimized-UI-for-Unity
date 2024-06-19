@@ -24,7 +24,7 @@ namespace TarasK8.UI.Animations.Transitions
         public override void Process(float t)
         {
             float lerp = _easing.Evaluate(t);
-            float scale = Mathf.Lerp(_current, _data.Scale, lerp);
+            float scale = Mathf.LerpUnclamped(_current, _data.Scale, lerp);
             _targetTransform.localScale = new Vector3(scale, scale, scale);
         }
 

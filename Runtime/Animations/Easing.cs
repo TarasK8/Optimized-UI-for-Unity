@@ -1,9 +1,8 @@
-using System;
 using UnityEngine;
 
 namespace TarasK8.UI.Animations
 {
-    [Serializable]
+    [System.Serializable]
     public partial class Easing
     {
         [SerializeField] private AnimationCurve _customCurve = new AnimationCurve(new Keyframe(0f, 0f), new Keyframe(1f, 1f));
@@ -85,11 +84,12 @@ namespace TarasK8.UI.Animations
             return 1 - InQuint((1 - t) * 2) / 2;
         }
 
-        public static float InSine(float t) => (float)-Math.Cos(t * Math.PI / 2);
-        public static float OutSine(float t) => (float)Math.Sin(t * Math.PI / 2);
-        public static float InOutSine(float t) => (float)(Math.Cos(t * Math.PI) - 1) / -2;
+        //public static float InSine(float t) => (float)-Math.Cos(t * Math.PI / 2);
+        public static float InSine(float t) => 1 - Mathf.Cos(t * Mathf.PI / 2);
+        public static float OutSine(float t) => Mathf.Sin(t * Mathf.PI / 2);
+        public static float InOutSine(float t) => (Mathf.Cos(t * Mathf.PI) - 1) / -2;
 
-        public static float InExpo(float t) => (float)Math.Pow(2, 10 * (t - 1));
+        public static float InExpo(float t) => Mathf.Pow(2, 10 * (t - 1));
         public static float OutExpo(float t) => 1 - InExpo(1 - t);
         public static float InOutExpo(float t)
         {
@@ -97,7 +97,7 @@ namespace TarasK8.UI.Animations
             return 1 - InExpo((1 - t) * 2) / 2;
         }
 
-        public static float InCirc(float t) => -((float)Math.Sqrt(1 - t * t) - 1);
+        public static float InCirc(float t) => -(Mathf.Sqrt(1 - t * t) - 1);
         public static float OutCirc(float t) => 1 - InCirc(1 - t);
         public static float InOutCirc(float t)
         {
@@ -109,7 +109,7 @@ namespace TarasK8.UI.Animations
         public static float OutElastic(float t)
         {
             float p = 0.3f;
-            return (float)Math.Pow(2, -10 * t) * (float)Math.Sin((t - p / 4) * (2 * Math.PI) / p) + 1;
+            return Mathf.Pow(2, -10 * t) * Mathf.Sin((t - p / 4) * (2 * Mathf.PI) / p) + 1;
         }
         public static float InOutElastic(float t)
         {
