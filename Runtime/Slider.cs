@@ -15,6 +15,23 @@ namespace TarasK8.UI
     [RequireComponent(typeof(RectTransform))]
     public class Slider : Selectable, IDragHandler, IInitializePotentialDragHandler
     {
+        // Handle
+        public const string HANDLE_RECT_FIELD = nameof(_handleRect);
+        public const string FILL_RECT_FIELD = nameof(_fillRect);
+        public const string DIRECTION_FIELD = nameof(_direction);
+        public const string MAGNET_TO_CURSOR_FIELD = nameof(_magnetToCursor);
+        // Value
+        public const string MIN_VALUE_FIELD = nameof(_minValue);
+        public const string MAX_VALUE_FIELD = nameof(_maxValue);
+        public const string STEP_FIELD = nameof(_step);
+        public const string CURVE_FIELD = nameof(_curve);
+        public const string VALUE_FIELD = nameof(_value);
+        // Display
+        public const string TEXT_FIELD = nameof(_text);
+        public const string FORMAT_FIELD = nameof(_format);
+        // Events
+        public const string ON_VALUE_CHANGED_FIELD = nameof(_onValueChanged);
+
         [Header("Handle")]
         [SerializeField] private RectTransform _handleRect;
         [SerializeField] private RectTransform _fillRect;
