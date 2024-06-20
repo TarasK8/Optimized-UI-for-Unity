@@ -57,9 +57,9 @@ namespace TarasK8.UI
         private Vector2 _offset = Vector2.zero;
         private DrivenRectTransformTracker _tracker;
         private bool _delayedUpdateVisuals = false;
-        private float _stepSize => Mathf.Approximately(ValueStep, 0f) == false ? ValueStep : (MaxValue - MinValue) * 0.1f;
-        private bool _reverseValue => _direction == Direction.RightToLeft || _direction == Direction.TopToBottom;
-        private Axis _axis => (_direction == Direction.LeftToRight || _direction == Direction.RightToLeft) ? Axis.Horizontal : Axis.Vertical;
+        private float StepSize => Mathf.Approximately(ValueStep, 0f) == false ? ValueStep : (MaxValue - MinValue) * 0.1f;
+        private bool ReverseValue => _direction == Direction.RightToLeft || _direction == Direction.TopToBottom;
+        private Axis HandleAxis => (_direction == Direction.LeftToRight || _direction == Direction.RightToLeft) ? Axis.Horizontal : Axis.Vertical;
 
         public RectTransform FillRect
         {
@@ -235,10 +235,10 @@ namespace TarasK8.UI
                 if (_fillImage != null && _fillImage.type == Image.Type.Filled)
                     oldNormalizedValue = _fillImage.fillAmount;
                 else
-                    oldNormalizedValue = (_reverseValue ? 1 - _fillRect.anchorMin[(int)_axis] : _fillRect.anchorMax[(int)_axis]);
+                    oldNormalizedValue = (ReverseValue ? 1 - _fillRect.anchorMin[(int)HandleAxis] : _fillRect.anchorMax[(int)HandleAxis]);
             }
             else if (_handleContainerRect != null)
-                oldNormalizedValue = (_reverseValue ? 1 - _handleRect.anchorMin[(int)_axis] : _handleRect.anchorMin[(int)_axis]);
+                oldNormalizedValue = (ReverseValue ? 1 - _handleRect.anchorMin[(int)HandleAxis] : _handleRect.anchorMin[(int)HandleAxis]);
 
             UpdateVisuals();
 
@@ -301,26 +301,26 @@ namespace TarasK8.UI
             switch (eventData.moveDir)
             {
                 case MoveDirection.Left:
-                    if (_axis == Axis.Horizontal && FindSelectableOnLeft() == null)
-                        Set(_reverseValue ? Value + _stepSize : Value - _stepSize);
+                    if (HandleAxis == Axis.Horizontal && FindSelectableOnLeft() == null)
+                        Set(ReverseValue ? Value + StepSize : Value - StepSize);
                     else
                         base.OnMove(eventData);
                     break;
                 case MoveDirection.Right:
-                    if (_axis == Axis.Horizontal && FindSelectableOnRight() == null)
-                        Set(_reverseValue ? Value - _stepSize : Value + _stepSize);
+                    if (HandleAxis == Axis.Horizontal && FindSelectableOnRight() == null)
+                        Set(ReverseValue ? Value - StepSize : Value + StepSize);
                     else
                         base.OnMove(eventData);
                     break;
                 case MoveDirection.Up:
-                    if (_axis == Axis.Vertical && FindSelectableOnUp() == null)
-                        Set(_reverseValue ? Value - _stepSize : Value + _stepSize);
+                    if (HandleAxis == Axis.Vertical && FindSelectableOnUp() == null)
+                        Set(ReverseValue ? Value - StepSize : Value + StepSize);
                     else
                         base.OnMove(eventData);
                     break;
                 case MoveDirection.Down:
-                    if (_axis == Axis.Vertical && FindSelectableOnDown() == null)
-                        Set(_reverseValue ? Value + _stepSize : Value - _stepSize);
+                    if (HandleAxis == Axis.Vertical && FindSelectableOnDown() == null)
+                        Set(ReverseValue ? Value + StepSize : Value - StepSize);
                     else
                         base.OnMove(eventData);
                     break;
@@ -329,44 +329,44 @@ namespace TarasK8.UI
 
         public void SetDirection(Direction direction, bool includeRectLayouts)
         {
-            Axis oldAxis = _axis;
-            bool oldReverse = _reverseValue;
+            Axis oldAxis = HandleAxis;
+            bool oldReverse = ReverseValue;
             this.HandleDirection = direction;
 
             if (!includeRectLayouts)
                 return;
 
-            if (_axis != oldAxis)
+            if (HandleAxis != oldAxis)
                 RectTransformUtility.FlipLayoutAxes(transform as RectTransform, true, true);
 
-            if (_reverseValue != oldReverse)
-                RectTransformUtility.FlipLayoutOnAxis(transform as RectTransform, (int)_axis, true, true);
+            if (ReverseValue != oldReverse)
+                RectTransformUtility.FlipLayoutOnAxis(transform as RectTransform, (int)HandleAxis, true, true);
         }
 
         public override UnityEngine.UI.Selectable FindSelectableOnLeft()
         {
-            if (navigation.mode == Navigation.Mode.Automatic && _axis == Axis.Horizontal)
+            if (navigation.mode == Navigation.Mode.Automatic && HandleAxis == Axis.Horizontal)
                 return null;
             return base.FindSelectableOnLeft();
         }
 
         public override UnityEngine.UI.Selectable FindSelectableOnRight()
         {
-            if (navigation.mode == Navigation.Mode.Automatic && _axis == Axis.Horizontal)
+            if (navigation.mode == Navigation.Mode.Automatic && HandleAxis == Axis.Horizontal)
                 return null;
             return base.FindSelectableOnRight();
         }
 
         public override UnityEngine.UI.Selectable FindSelectableOnUp()
         {
-            if (navigation.mode == Navigation.Mode.Automatic && _axis == Axis.Vertical)
+            if (navigation.mode == Navigation.Mode.Automatic && HandleAxis == Axis.Vertical)
                 return null;
             return base.FindSelectableOnUp();
         }
 
         public override UnityEngine.UI.Selectable FindSelectableOnDown()
         {
-            if (navigation.mode == Navigation.Mode.Automatic && _axis == Axis.Vertical)
+            if (navigation.mode == Navigation.Mode.Automatic && HandleAxis == Axis.Vertical)
                 return null;
             return base.FindSelectableOnDown();
         }
@@ -394,10 +394,10 @@ namespace TarasK8.UI
                 }
                 else
                 {
-                    if (_reverseValue)
-                        anchorMin[(int)_axis] = 1 - normalizedValue;
+                    if (ReverseValue)
+                        anchorMin[(int)HandleAxis] = 1 - normalizedValue;
                     else
-                        anchorMax[(int)_axis] = normalizedValue;
+                        anchorMax[(int)HandleAxis] = normalizedValue;
                 }
 
                 _fillRect.anchorMin = anchorMin;
@@ -409,7 +409,7 @@ namespace TarasK8.UI
                 _tracker.Add(this, _handleRect, DrivenTransformProperties.Anchors);
                 Vector2 anchorMin = Vector2.zero;
                 Vector2 anchorMax = Vector2.one;
-                anchorMin[(int)_axis] = anchorMax[(int)_axis] = (_reverseValue ? (1 - normalizedValue) : normalizedValue);
+                anchorMin[(int)HandleAxis] = anchorMax[(int)HandleAxis] = (ReverseValue ? (1 - normalizedValue) : normalizedValue);
                 _handleRect.anchorMin = anchorMin;
                 _handleRect.anchorMax = anchorMax;
             }
@@ -423,7 +423,7 @@ namespace TarasK8.UI
         private void UpdateDrag(PointerEventData eventData, Camera cam)
         {
             RectTransform clickRect = _handleContainerRect ?? _fillContainerRect;
-            if (clickRect != null && clickRect.rect.size[(int)_axis] > 0)
+            if (clickRect != null && clickRect.rect.size[(int)HandleAxis] > 0)
             {
                 Vector2 position = Vector2.zero;
                 if (! MultipleDisplayUtilities.GetRelativeMousePositionForDrag(eventData, ref position))
@@ -434,8 +434,8 @@ namespace TarasK8.UI
                     return;
                 localCursor -= clickRect.rect.position;
 
-                float val = Mathf.Clamp01((localCursor - _offset)[(int)_axis] / clickRect.rect.size[(int)_axis]);
-                NormalizedValue = (_reverseValue ? 1f - val : val);
+                float val = Mathf.Clamp01((localCursor - _offset)[(int)HandleAxis] / clickRect.rect.size[(int)HandleAxis]);
+                NormalizedValue = (ReverseValue ? 1f - val : val);
             }
         }
 
