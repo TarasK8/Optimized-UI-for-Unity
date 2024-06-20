@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using System.Reflection;
 using TarasK8.UI;
 using TarasK8.UI.Animations;
@@ -8,7 +10,7 @@ using UnityEngine;
 namespace TarasK8.UIEditor
 {
     [CanEditMultipleObjects]
-    [CustomEditor(typeof(Selectable))]
+    [CustomEditor(typeof(Selectable), true)]
     public class SelectableEditor : UnityEditor.UI.SelectableEditor
     {
         #region For Visualize Navigation Button
@@ -27,6 +29,8 @@ namespace TarasK8.UIEditor
         private GUIContent _transitionTypeContent = new GUIContent("Transition");
         private AnimBool _showTransitionsFade;
 
+        public string[] _propertyPathToExcludeForChildClasses;
+
         protected override void OnEnable()
         {
             base.OnEnable();
@@ -43,6 +47,21 @@ namespace TarasK8.UIEditor
 
             s_ShowNavigation = typeof(UnityEditor.UI.SelectableEditor).GetField(nameof(s_ShowNavigation), BindingFlags.NonPublic | BindingFlags.Static);
             _showTransitionsFade = new AnimBool(true);
+
+            _propertyPathToExcludeForChildClasses = new[]
+            {
+                m_Interactable.propertyPath,
+                m_Navigation.propertyPath,
+                _transitionType.propertyPath,
+                _stateMachine.propertyPath,
+                _normal.propertyPath,
+                _hover.propertyPath,
+                _pressed.propertyPath,
+                _selected.propertyPath,
+                _disabled.propertyPath,
+            };
+            string[] baseExcludeProperties = (string[])typeof(UnityEditor.UI.SelectableEditor).GetField("m_PropertyPathToExcludeForChildClasses", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(this);
+            _propertyPathToExcludeForChildClasses = _propertyPathToExcludeForChildClasses.Concat(baseExcludeProperties).ToArray();
         }
 
         public override void OnInspectorGUI()
@@ -75,6 +94,11 @@ namespace TarasK8.UIEditor
 
             EditorGUILayout.PropertyField(m_Navigation);
             VizualizeNavigationButton();
+
+            if (GetType() != typeof(SelectableEditor))
+                return;
+
+            DrawPropertiesExcluding(serializedObject, _propertyPathToExcludeForChildClasses);
 
             serializedObject.ApplyModifiedProperties();
         }
