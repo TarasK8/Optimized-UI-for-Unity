@@ -1,7 +1,6 @@
 using TarasK8.UI.Animations;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 namespace TarasK8.UI
 {
@@ -97,9 +96,9 @@ namespace TarasK8.UI
             return _stateMachine;
         }
 
-        private void Click()
+        protected virtual void Click()
         {
-            //Debug.Log("Click");
+
         }
 
         private void UpdateState()

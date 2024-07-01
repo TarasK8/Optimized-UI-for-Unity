@@ -46,7 +46,7 @@ namespace TarasK8.UIEditor
             _disabled = serializedObject.FindProperty(nameof(_disabled));
 
             s_ShowNavigation = typeof(UnityEditor.UI.SelectableEditor).GetField(nameof(s_ShowNavigation), BindingFlags.NonPublic | BindingFlags.Static);
-            _showTransitionsFade = new AnimBool(true);
+            _showTransitionsFade = new AnimBool(_transitionType.enumValueIndex != 0);
 
             _propertyPathToExcludeForChildClasses = new[]
             {
