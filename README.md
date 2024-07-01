@@ -1,16 +1,9 @@
 # Optimized UI
-A package for Unity that is designed to greatly simplify user interface development
+A package for Unity that is designed to greatly simplify user interface development.
+
+> [!WARNING]
+> The package is currently in an early stage of development, so some methods and concepts may change over time. Use at your own risk
 
 ## Features
-- Most of the built-in UI components have been redesigned to provide more functionality and performance
-  - Selectable
-  - Button
-  - Slider
-  - Scrollbar
-  - Scrollview
-  - Toggle
-  - Input Field
-  - Dropdown
-- New UI components
-  - Switcher
-  - Progress Bar
+- State Machine: This is an animator replacement focused on switching between visual states of UI elements, such as buttons.
+- Flex components: an analogue of CSS Flex in web design. Automatically places elements in a container, you can specify Grow, Shrink, Basis for each element
