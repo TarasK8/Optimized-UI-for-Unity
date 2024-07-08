@@ -22,6 +22,8 @@ namespace TarasK8.UI.Animations
         public abstract List<IAnimationData> GetStates();
 
         public abstract string[] GetAllStateNames();
+
+        public abstract bool TryFindState(string stateName, out int index);
     }
 
     [Serializable]
@@ -67,6 +69,20 @@ namespace TarasK8.UI.Animations
         public override string[] GetAllStateNames()
         {
             return _states.Select(x => x.Name).ToArray();
+        }
+
+        public override bool TryFindState(string stateName, out int index)
+        {
+            for (int i = 0; i < _states.Count; i++)
+            {
+                if (_states[i].Name == stateName)
+                {
+                    index = i;
+                    return true;
+                }
+            }
+            index = -1;
+            return false;
         }
 
         public override void Start()

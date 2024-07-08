@@ -16,7 +16,6 @@ namespace TarasK8.UI.Animations
 
         private int _currentState = 0;
 
-
         public void SetState(int stateIndex)
         {
             if (_currentState == stateIndex) return;
@@ -30,6 +29,11 @@ namespace TarasK8.UI.Animations
                 transition.Reset();
                 TweenManager.StartTween(transition);
             }
+        }
+
+        public void SetState(string stateName)
+        {
+            SetState(StateNameToIndex(stateName));
         }
 
         public void AddState(string stateName)
@@ -93,20 +97,17 @@ namespace TarasK8.UI.Animations
             return GetAllStateNames().Contains(name);
         }
 
-        /*
-        private bool TryFindStateIndex(string stateName, out int stateIndex)
+        
+        public int StateNameToIndex(string stateName)
         {
-            for (int i = 0; i < _states.Length; i++)
+            if(_transitions[0].TryFindState(stateName, out int stateIndex))
             {
-                if (_states[i].Id == stateName)
-                {
-                    stateIndex = i;
-                    return true;
-                }
+                return stateIndex;
             }
-            stateIndex = -1;
-            return false;
+            else
+            {
+                throw new ArgumentException($"State '{stateName}' not found.");
+            }
         }
-        */
     }
 }

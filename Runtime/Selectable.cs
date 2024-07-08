@@ -103,8 +103,10 @@ namespace TarasK8.UI
 
         private void UpdateState()
         {
-            if (gameObject.activeSelf == false) return;
-            if (_transitionType != TransitionType.StateMachine) return;
+            if (gameObject.activeSelf == false ||
+                _transitionType != TransitionType.StateMachine ||
+                Application.isPlaying == false)
+                return;
 
             if (base.interactable == false)
             {
