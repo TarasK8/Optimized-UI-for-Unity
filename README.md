@@ -21,4 +21,6 @@ A package for Unity that is designed to greatly simplify user interface developm
 
 
 ### Application of the State Machine component
-- If you want to make a button or slider, then you can use a special Button or Slider component in which you can use the State Machine to 
+- If you want to make a simple element like a button or slider, you can use a special components (`Button`, `Slider`, `Scrollbar` or `Selectable`), in which you can use a `State Machine` for transitions. All available components can be found in the `Optimized UI` tab in the `Add Component` menu.
+
+  ![image](https://github.com/TarasK8/Optimized-UI-for-Unity/assets/108939631/10f067f5-8fcb-4ac6-9e5b-de2af0966cc1)
