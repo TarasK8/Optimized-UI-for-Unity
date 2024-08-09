@@ -6,9 +6,16 @@ namespace TarasK8.UI.Animations.Tweening
 {
     public class TweenManager : MonoBehaviour
     {
+        [SerializeField] private bool _ignoreTimeScale = true;
 
         private static TweenManager _instance;
         private List<Tween> _activeTweens = new List<Tween>();
+
+        public static bool IgnoreTimeScale
+        {
+            get => GetOrCreateInstance()._ignoreTimeScale;
+            set => GetOrCreateInstance()._ignoreTimeScale = value;
+        }
 
         private void Awake()
         {
@@ -17,9 +24,11 @@ namespace TarasK8.UI.Animations.Tweening
 
         private void Update()
         {
+            float delta = _ignoreTimeScale ? Time.unscaledDeltaTime : Time.timeScale;
+
             foreach (var tween in _activeTweens)
             {
-                tween.Update(Time.deltaTime);
+                tween.Update(delta);
             }
 
             _activeTweens.RemoveAll(t => t.IsCompleted);

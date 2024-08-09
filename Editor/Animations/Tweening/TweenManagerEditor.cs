@@ -7,10 +7,21 @@ namespace TarasK8.UIEditor.Animations.Tweening
     [CustomEditor(typeof(TweenManager))]
     public class TweenManagerEditor : Editor
     {
+        private SerializedProperty _ignoreTimeScale;
+
+        private void OnEnable()
+        {
+            _ignoreTimeScale = serializedObject.FindProperty("_ignoreTimeScale");
+        }
+
         public override bool RequiresConstantRepaint() => true;
 
         public override void OnInspectorGUI()
         {
+            EditorGUILayout.PropertyField(_ignoreTimeScale);
+
+            EditorGUILayout.Space();
+
             var tweens = TweenManager.GetActiveTweens();
             EditorGUILayout.LabelField($"Active Tweens ({tweens.Count})", EditorStyles.boldLabel);
             foreach (var item in tweens)
