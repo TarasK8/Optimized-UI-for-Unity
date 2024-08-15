@@ -104,6 +104,7 @@ namespace TarasK8.UI
         private void UpdateState()
         {
             if (gameObject.activeSelf == false ||
+                _stateMachine == null ||
                 _transitionType != TransitionType.StateMachine ||
                 Application.isPlaying == false)
                 return;
