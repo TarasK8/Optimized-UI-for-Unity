@@ -2,7 +2,9 @@
 A package for Unity that is designed to greatly simplify user interface development.
 
 > [!WARNING]
-> The package is currently in an early stage of development, so some methods and concepts may change over time. Use at your own risk
+> The package is currently in an early stage of development, so some methods and concepts may change over time. Use at your own risk.
+> 
+> I am also developing this package primarily for personal use.
 
 ## Features
 - State Machine: This is an animator replacement focused on switching between visual states of UI elements, such as buttons.
