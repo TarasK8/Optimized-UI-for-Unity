@@ -1,13 +1,11 @@
-using TarasK8.UI;
 using UnityEditor;
 using UnityEditor.AnimatedValues;
-using UnityEditor.UI;
 using UnityEngine;
 
-namespace TarasK8.UIEditor
+namespace TarasK8.UI.Editor
 {
     [CustomEditor(typeof(ScrollRect))]
-    public class ScrollRectEditor : Editor
+    public class ScrollRectEditor : UnityEditor.Editor
     {
         private SerializedProperty _content;
         private SerializedProperty _horizontal;

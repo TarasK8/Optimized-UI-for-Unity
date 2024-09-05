@@ -7,7 +7,7 @@ using UnityEditor;
 using UnityEditor.AnimatedValues;
 using UnityEngine;
 
-namespace TarasK8.UIEditor
+namespace TarasK8.UI.Editor
 {
     [CanEditMultipleObjects]
     [CustomEditor(typeof(Selectable), true)]

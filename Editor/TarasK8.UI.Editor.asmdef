@@ -1,6 +1,6 @@
 {
     "name": "TarasK8.UI.Editor",
-    "rootNamespace": "",
+    "rootNamespace": "TarasK8.UI.Editor",
     "references": [
         "GUID:d9056d5624ecddf41b5fe67ac5814f81",
         "GUID:6546d7765b4165b40850b3667f981c26",

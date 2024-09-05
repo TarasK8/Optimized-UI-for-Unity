@@ -2,7 +2,7 @@ using TarasK8.UI.Animations;
 using UnityEditor;
 using UnityEngine;
 
-namespace TarasK8.UIEditor.Animations
+namespace TarasK8.UI.Editor.Animations
 {
     [CustomPropertyDrawer(typeof(Easing))]
     public class EasingPropertyDrawer : PropertyDrawer

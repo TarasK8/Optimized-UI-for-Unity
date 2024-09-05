@@ -2,17 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using TarasK8.UI;
 using TarasK8.UI.Animations;
 using UnityEditor;
 using UnityEngine;
 
-namespace TarasK8.UIEditor.Animations
+namespace TarasK8.UI.Editor.Animations
 {
     [CustomEditor(typeof(StateMachine))]
     [CanEditMultipleObjects]
 
-    public class StateMachineEditor : Editor
+    public class StateMachineEditor : UnityEditor.Editor
     {
         private string[] _propertiesTypesOptions;
         private List<Type> _propertiesTypes;
