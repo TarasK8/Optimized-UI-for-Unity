@@ -2,10 +2,10 @@ using TarasK8.UI.Animations;
 using UnityEditor;
 using UnityEngine;
 
-namespace TarasK8.UIEditor.Animations
+namespace TarasK8.UI.Editor.Animations
 {
     [CustomPropertyDrawer(typeof(Easing))]
-    public class EasingEditor : PropertyDrawer
+    public class EasingPropertyDrawer : PropertyDrawer
     {
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {

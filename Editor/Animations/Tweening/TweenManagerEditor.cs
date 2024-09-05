@@ -2,10 +2,10 @@ using TarasK8.UI.Animations.Tweening;
 using UnityEditor;
 using UnityEngine;
 
-namespace TarasK8.UIEditor.Animations.Tweening
+namespace TarasK8.UI.Editor.Animations.Tweening
 {
     [CustomEditor(typeof(TweenManager))]
-    public class TweenManagerEditor : Editor
+    public class TweenManagerEditor : UnityEditor.Editor
     {
         private SerializedProperty _ignoreTimeScale;
 

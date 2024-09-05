@@ -1,8 +1,7 @@
 using TarasK8.UI;
 using UnityEditor;
-using UnityEngine;
 
-namespace TarasK8.UIEditor
+namespace TarasK8.UI.Editor
 {
     [CanEditMultipleObjects]
     [CustomEditor(typeof(Slider))]
