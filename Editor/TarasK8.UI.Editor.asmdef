@@ -2,7 +2,9 @@
     "name": "TarasK8.UI.Editor",
     "rootNamespace": "",
     "references": [
-        "GUID:d9056d5624ecddf41b5fe67ac5814f81"
+        "GUID:d9056d5624ecddf41b5fe67ac5814f81",
+        "GUID:6546d7765b4165b40850b3667f981c26",
+        "GUID:343deaaf83e0cee4ca978e7df0b80d21"
     ],
     "includePlatforms": [
         "Editor"
