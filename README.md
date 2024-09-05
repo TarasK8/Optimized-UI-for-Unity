@@ -5,7 +5,7 @@ A package for Unity that is designed to greatly simplify user interface developm
 > The package is currently in an early stage of development, so some methods and concepts may change over time. Use at your own risk
 
 ## Features
-- State Switcher: This is an animator replacement focused on switching between visual states of UI elements, such as buttons.
+- State Machine: This is an animator replacement focused on switching between visual states of UI elements, such as buttons.
 - Flex components: an analogue of CSS Flex in web design. Automatically places elements in a container, you can specify Grow, Shrink, Basis for each element
 
 ## State Machine Usage
