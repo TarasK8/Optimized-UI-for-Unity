@@ -1,7 +1,5 @@
-using log4net.Util;
 using System;
 using System.Collections;
-using TarasK8.UI;
 using TarasK8.UI.Utilites;
 using UnityEngine;
 using UnityEngine.Events;
@@ -30,8 +28,10 @@ namespace TarasK8.UI
         private DrivenRectTransformTracker m_Tracker;
         private Coroutine m_PointerDownRepeat;
         private bool isPointerDownAndNotDragging = false;
-        private bool m_DelayedUpdateVisuals = false;
         private float stepSize => (_numberOfSteps > 1) ? 1f / (_numberOfSteps - 1) : 0.1f;
+#if UNITY_EDITOR
+        private bool m_DelayedUpdateVisuals = false;
+#endif
 
         public RectTransform HandleRect
         {
@@ -485,7 +485,7 @@ namespace TarasK8.UI
         {
             Axis oldAxis = axis;
             bool oldReverse = reverseValue;
-            this.HandleDirection = direction;
+            HandleDirection = direction;
 
             if (!includeRectLayouts)
                 return;

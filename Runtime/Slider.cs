@@ -6,7 +6,6 @@ using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using TMPro;
-using Unity.VisualScripting.YamlDotNet.Core.Tokens;
 
 namespace TarasK8.UI
 {
@@ -56,10 +55,12 @@ namespace TarasK8.UI
         private RectTransform _handleContainerRect;
         private Vector2 _offset = Vector2.zero;
         private DrivenRectTransformTracker _tracker;
-        private bool _delayedUpdateVisuals = false;
         private float StepSize => Mathf.Approximately(ValueStep, 0f) == false ? ValueStep : (MaxValue - MinValue) * 0.1f;
         private bool ReverseValue => _direction == Direction.RightToLeft || _direction == Direction.TopToBottom;
         private Axis HandleAxis => (_direction == Direction.LeftToRight || _direction == Direction.RightToLeft) ? Axis.Horizontal : Axis.Vertical;
+#if UNITY_EDITOR
+        private bool _delayedUpdateVisuals = false;
+#endif
 
         public RectTransform FillRect
         {

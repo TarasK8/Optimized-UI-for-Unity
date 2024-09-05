@@ -46,7 +46,9 @@ namespace TarasK8.UI.Animations.Tweening
             activeTweens.Add(tween);
         }
 
+#if UNITY_EDITOR
         [MenuItem("GameObject/UI Optimazed/UI Tween Manager")]
+#endif
         private static TweenManager GetOrCreateInstance()
         {
             if (_instance != null)
