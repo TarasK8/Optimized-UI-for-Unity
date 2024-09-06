@@ -4,13 +4,13 @@ using UnityEngine;
 namespace TarasK8.UI.Animations.Transitions
 {
     [Serializable]
-    [TransitionMenuName("Rect Transform/Scale All")]
+    [TransitionMenuName("Transform/Scale All")]
     public class ScaleAll : Transition<ScaleAll.Data>
     {
         [field: SerializeField] public override float Duration { get; protected set; }
         [field: SerializeField] public override float Delay { get; protected set; }
         [SerializeField] private Easing _easing;
-        [SerializeField] private RectTransform _targetTransform;
+        [SerializeField] private Transform _targetTransform;
 
         private Data _data;
         private float _current;
