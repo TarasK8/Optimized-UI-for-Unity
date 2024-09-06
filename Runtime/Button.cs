@@ -1,12 +1,14 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.EventSystems;
 
 namespace TarasK8.UI
 {
     [AddComponentMenu("Optimized UI/Button")]
     [ExecuteInEditMode]
     [RequireComponent(typeof(RectTransform))]
-    public class Button : Selectable
+    public class Button : Selectable, IPointerClickHandler, ISubmitHandler
     {
         [Space]
         [SerializeField] public float _doubleClickTheshold = 0.5f;
@@ -15,12 +17,37 @@ namespace TarasK8.UI
 
         private float _lastClickTime = Mathf.NegativeInfinity;
 
-        protected override void Click()
+        public override void OnPointerClick(PointerEventData eventData)
         {
+            base.OnPointerClick(eventData);
+            if (eventData.button != PointerEventData.InputButton.Left)
+                return;
+
+            Press();
+        }
+
+        public override void OnSubmit(BaseEventData eventData)
+        {
+            base.OnSubmit(eventData);
+            Press();
+
+            // if we get set disabled during the press
+            // don't run the coroutine.
+            if (!IsActive() || !IsInteractable())
+                return;
+        }
+
+        private void Press()
+        {
+            if (!IsActive() || !IsInteractable())
+                return;
+
+            UISystemProfilerApi.AddMarker("Button.onClick", this);
+
             OnClick?.Invoke();
 
             float difference = Time.time - _lastClickTime;
-            if(difference < _doubleClickTheshold)
+            if (difference < _doubleClickTheshold)
             {
                 OnDoubleClick?.Invoke();
                 _lastClickTime = Mathf.NegativeInfinity;

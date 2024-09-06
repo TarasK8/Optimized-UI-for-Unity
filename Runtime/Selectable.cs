@@ -34,10 +34,6 @@ namespace TarasK8.UI
             UpdateState();
         }
 
-        public void OnPointerClick(PointerEventData eventData)
-        {
-        }
-
         public override void OnPointerDown(PointerEventData eventData)
         {
             base.OnPointerDown(eventData);
@@ -86,19 +82,19 @@ namespace TarasK8.UI
             UpdateState();
         }
 
-        public void OnSubmit(BaseEventData eventData)
-        {
-            Click();
-        }
-
         public StateMachine GetStateMachine()
         {
             return _stateMachine;
         }
 
-        protected virtual void Click()
+        public virtual void OnPointerClick(PointerEventData eventData)
         {
+            
+        }
 
+        public virtual void OnSubmit(BaseEventData eventData)
+        {
+            
         }
 
         private void UpdateState()
