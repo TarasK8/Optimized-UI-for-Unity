@@ -4,35 +4,36 @@ using UnityEngine;
 namespace TarasK8.UI.Animations.Transitions
 {
     [Serializable]
-    [TransitionMenuName("Transform/Scale")]
-    public class Scale : Transition<Scale.Data>
+    [TransitionMenuName("Transform/Rotation Z")]
+    public class RotationZ : Transition<RotationZ.Data>
     {
-        // You can add the [field: SerializeField] attribute to avoid adding additional fields
         [field: SerializeField] public override float Duration { get; protected set; }
         [field: SerializeField] public override float Delay { get; protected set; }
-        [SerializeField] public Easing _easing;
-        [SerializeField] private Transform _targetTransform;
+        [SerializeField] private Easing _easing;
+        [SerializeField] private RectTransform _targetTransform;
 
-        private Vector3 _current;
         private Data _data;
+        private float _current;
 
         public override void Start(Data data)
         {
             _data = data;
-            _current = _targetTransform.localScale;
+            _current = _targetTransform.rotation.eulerAngles.z;
         }
 
         public override void Process(float t)
         {
             float lerp = _easing.Evaluate(t);
-            _targetTransform.localScale = Vector3.LerpUnclamped(_current, _data.Scale, lerp);
+            Vector3 currentRotation = _targetTransform.rotation.eulerAngles;
+            float z = Mathf.LerpAngle(_current, _data.Rotation, lerp);
+            _targetTransform.rotation = Quaternion.Euler(currentRotation.x, currentRotation.y, z);
         }
 
         [Serializable]
         public class Data : IAnimationData
         {
             [field: SerializeField] public string Name { get; set; }
-            [SerializeField] public Vector3 Scale = Vector3.one;
+            [SerializeField] public float Rotation = 0f;
         }
     }
 }
