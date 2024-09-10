@@ -5,8 +5,8 @@ A package for Unity that is designed to greatly simplify user interface developm
 > The package is currently in an early stage of development, so some methods and concepts may change over time. Use at your own risk
 
 ## Features
-- State Machine: This is an animator replacement focused on switching between visual states of UI elements, such as buttons.
-- Flex components: an analogue of CSS Flex in web design. Automatically places elements in a container, you can specify Grow, Shrink, Basis for each element
+- **State Machine**: This is an animator replacement focused on switching between visual states of UI elements, such as buttons.
+- **Flex components**: an analogue of CSS Flex in web design. Automatically places elements in a container, you can specify Grow, Shrink, Basis for each element *(During the development, I found out that Unity already has something similar, but maybe my solution will be more convenient for someone)*
 
 ## State Machine Usage
 ### 1. Configure State Machine
@@ -23,5 +23,13 @@ A package for Unity that is designed to greatly simplify user interface developm
 - If you want to make a simple element like a button or slider, you can use a special components (`Button`, `Slider`, `Scrollbar` or `Selectable`), in this package they are modified to use `State Machine` for transitions. All available components can be found in the `Optimized UI` tab in the `Add Component` menu.
 
   ![image](https://github.com/TarasK8/Optimized-UI-for-Unity/assets/108939631/10f067f5-8fcb-4ac6-9e5b-de2af0966cc1)
+- If you want to manually switch states, you can easily do it through code:
+  ```csharp
+  [SerializeField] private StateMachine _stateMachine;
 
-  
+  private void SomeMethod()
+  {
+     _stateMachine.SetState("pressed"); // with state name
+     _stateMachine.SetState(1);  // or state index
+  }
+  ```
