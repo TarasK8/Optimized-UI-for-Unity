@@ -18,14 +18,16 @@ namespace TarasK8.UI.Editor.Animations
         private int _selectedTypeOption;
         private string _selectedStateName;
         private SerializedProperty _fullyComplate;
+        private SerializedProperty _defaultState;
         private SerializedProperty _transitions;
         private StateMachine _target;
 
         private void OnEnable()
         {
             _target = target as StateMachine;
-            _fullyComplate = serializedObject.FindProperty(StateMachine.FULLY_COMPLATE_FIELD_NAME);
-            _transitions = serializedObject.FindProperty(StateMachine.TRANSITIONS_FIELD_NAME);
+            _fullyComplate = serializedObject.FindProperty("_fullyComplateTransition");
+            _defaultState = serializedObject.FindProperty("_defaultState");
+            _transitions = serializedObject.FindProperty("_transitions");
             _propertiesTypes = GetTransitionTypes();
             _propertiesTypesOptions = new string[_propertiesTypes.Count];
             for (int i = 0; i < _propertiesTypes.Count; i++)
@@ -61,6 +63,7 @@ namespace TarasK8.UI.Editor.Animations
         {
             EditorGUILayout.LabelField("Options", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(_fullyComplate);
+            EditorGUILayout.PropertyField(_defaultState);
         }
 
         private void DrawAllTransitions()

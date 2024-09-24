@@ -19,8 +19,8 @@ namespace TarasK8.UI.Editor
         private GUIContent m_VisualizeNavigationContent = new GUIContent("Visualize", "Show navigation flows between selectable UI elements.");
         #endregion
 
-        private SerializedProperty m_Interactable;
-        private SerializedProperty m_Navigation;
+        private SerializedProperty _interactable;
+        private SerializedProperty _navigation;
 
         private SerializedProperty _transitionType;
         private SerializedProperty _stateMachine;
@@ -34,24 +34,24 @@ namespace TarasK8.UI.Editor
         protected override void OnEnable()
         {
             base.OnEnable();
-            m_Interactable = serializedObject.FindProperty(nameof(m_Interactable));
-            m_Navigation = serializedObject.FindProperty(nameof(m_Navigation));
+            _interactable = serializedObject.FindProperty("m_Interactable");
+            _navigation = serializedObject.FindProperty("m_Navigation");
 
-            _transitionType = serializedObject.FindProperty(nameof(_transitionType));
-            _stateMachine = serializedObject.FindProperty(nameof(_stateMachine));
-            _normal = serializedObject.FindProperty(nameof(_normal));
-            _hover = serializedObject.FindProperty(nameof(_hover));
-            _pressed = serializedObject.FindProperty(nameof(_pressed));
-            _selected = serializedObject.FindProperty(nameof(_selected));
-            _disabled = serializedObject.FindProperty(nameof(_disabled));
+            _transitionType = serializedObject.FindProperty("_transitionType");
+            _stateMachine = serializedObject.FindProperty("_stateMachine");
+            _normal = serializedObject.FindProperty("_normal");
+            _hover = serializedObject.FindProperty("_hover");
+            _pressed = serializedObject.FindProperty("_pressed");
+            _selected = serializedObject.FindProperty("_selected");
+            _disabled = serializedObject.FindProperty("_disabled");
 
             s_ShowNavigation = typeof(UnityEditor.UI.SelectableEditor).GetField(nameof(s_ShowNavigation), BindingFlags.NonPublic | BindingFlags.Static);
             _showTransitionsFade = new AnimBool(_transitionType.enumValueIndex != 0);
 
             _propertyPathToExcludeForChildClasses = new[]
             {
-                m_Interactable.propertyPath,
-                m_Navigation.propertyPath,
+                _interactable.propertyPath,
+                _navigation.propertyPath,
                 _transitionType.propertyPath,
                 _stateMachine.propertyPath,
                 _normal.propertyPath,
@@ -68,7 +68,7 @@ namespace TarasK8.UI.Editor
         {
             serializedObject.Update();
 
-            EditorGUILayout.PropertyField(m_Interactable);
+            EditorGUILayout.PropertyField(_interactable);
             EditorGUILayout.PropertyField(_transitionType, _transitionTypeContent);
             _showTransitionsFade.target = _transitionType.enumValueIndex != 0;
 
@@ -92,7 +92,7 @@ namespace TarasK8.UI.Editor
 
             EditorGUILayout.Space();
 
-            EditorGUILayout.PropertyField(m_Navigation);
+            EditorGUILayout.PropertyField(_navigation);
             VizualizeNavigationButton();
 
             if (GetType() != typeof(SelectableEditor))

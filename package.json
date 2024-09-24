@@ -1,8 +1,8 @@
 {
   "name": "com.tarask8.optimized-ui",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "displayName": "Optimized UI",
-  "description": "This is a simple save system for unity.",
+  "description": "A package for Unity that is designed to greatly simplify user interface development.",
   "unity": "2022.3",
   "documentationUrl": "https://example.com/",
   "changelogUrl": "https://example.com/changelog.html",

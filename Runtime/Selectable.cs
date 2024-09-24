@@ -14,7 +14,7 @@ namespace TarasK8.UI
         [SerializeField] private StateMachine _stateMachine;
         [SerializeField] private int _normal, _hover, _pressed, _selected, _disabled;
 
-        private bool _isHover, _isPressed, _isSelected;
+        [SerializeField] private bool _isHover, _isPressed, _isSelected;
 
 #if UNITY_EDITOR
         protected override void OnValidate()
@@ -27,10 +27,17 @@ namespace TarasK8.UI
             }
         }
 #endif
-
-        protected override void Awake()
+        protected override void OnEnable()
         {
-            base.Awake();
+            base.OnEnable();
+            UpdateState(instant: true);
+        }
+
+        protected virtual void OnApplicationFocus(bool focus)
+        {
+            _isHover = false;
+            _isPressed = false;
+            _isSelected = false;
             UpdateState();
         }
 
@@ -97,7 +104,7 @@ namespace TarasK8.UI
             
         }
 
-        private void UpdateState()
+        private void UpdateState(bool instant = false)
         {
             if (gameObject.activeSelf == false ||
                 _stateMachine == null ||
@@ -105,27 +112,35 @@ namespace TarasK8.UI
                 Application.isPlaying == false)
                 return;
 
+            int stateIndex = GetStateIndex();
+
+            if (instant)
+                _stateMachine.SetStateInstantly(stateIndex);
+            else
+                _stateMachine.SetState(stateIndex);
+        }
+
+        private int GetStateIndex()
+        {
             if (base.interactable == false)
             {
-                _stateMachine.SetState(_disabled);
-                return;
+                return _disabled;
             }
-
             if (_isPressed)
             {
-                _stateMachine.SetState(_pressed);
+                return _pressed;
             }
             else if (_isHover)
             {
-                _stateMachine.SetState(_hover);
+                return _hover;
             }
             else if (_isSelected)
             {
-                _stateMachine.SetState(_selected);
+                return _selected;
             }
             else
             {
-                _stateMachine.SetState(_normal);
+                return _normal;
             }
         }
 
