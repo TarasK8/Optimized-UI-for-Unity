@@ -17,18 +17,16 @@ namespace TarasK8.UI
 
         private float _lastClickTime = Mathf.NegativeInfinity;
 
-        public override void OnPointerClick(PointerEventData eventData)
+        public void OnPointerClick(PointerEventData eventData)
         {
-            base.OnPointerClick(eventData);
             if (eventData.button != PointerEventData.InputButton.Left)
                 return;
 
             Press();
         }
 
-        public override void OnSubmit(BaseEventData eventData)
+        public void OnSubmit(BaseEventData eventData)
         {
-            base.OnSubmit(eventData);
             Press();
 
             // if we get set disabled during the press

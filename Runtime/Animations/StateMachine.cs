@@ -9,17 +9,26 @@ namespace TarasK8.UI.Animations
     [AddComponentMenu("Optimized UI/Animation/State Machine")]
     public class StateMachine : MonoBehaviour
     {
-        public const string FULLY_COMPLATE_FIELD_NAME = nameof(_fullyComplateTransition);
-        public const string TRANSITIONS_FIELD_NAME = nameof(_transitions);
         [SerializeField] private bool _fullyComplateTransition = false;
+        [SerializeField, StateSelector(hasNone:true)] private int _defaultState = -1;
         [SerializeReference] private List<Transition> _transitions = new();
 
-        private int _currentState = 0;
+        public int CurrentState { get; private set; } = -1;
+
+        private void Start()
+        {
+            if (_defaultState < 0)
+                return;
+
+            SetStateInstantly(_defaultState);
+        }
 
         public void SetState(int stateIndex)
         {
-            if (_currentState == stateIndex) return;
-            _currentState = stateIndex;
+            if (CurrentState == stateIndex)
+                return;
+
+            CurrentState = stateIndex;
 
             foreach (var transition in _transitions)
             {
@@ -34,6 +43,19 @@ namespace TarasK8.UI.Animations
         public void SetState(string stateName)
         {
             SetState(StateNameToIndex(stateName));
+        }
+
+        public void SetStateInstantly(int stateIndex)
+        {
+            foreach (var transition in _transitions)
+            {
+                transition.SetState(stateIndex);
+                if (transition.IsStarted && _fullyComplateTransition)
+                    transition.Process(1f);
+                transition.Reset();
+                transition.Start();
+                transition.Complate();
+            }
         }
 
         public void AddState(string stateName)

@@ -8,13 +8,13 @@ namespace TarasK8.UI
     [ExecuteAlways]
     [SelectionBase]
     [DisallowMultipleComponent]
-    public class Selectable : UnityEngine.UI.Selectable, IPointerClickHandler, IPointerDownHandler, IPointerUpHandler, IPointerEnterHandler, IPointerExitHandler, ISubmitHandler
+    public class Selectable : UnityEngine.UI.Selectable, IPointerDownHandler, IPointerUpHandler, IPointerEnterHandler, IPointerExitHandler
     {
         [SerializeField] private TransitionType _transitionType;
         [SerializeField] private StateMachine _stateMachine;
         [SerializeField] private int _normal, _hover, _pressed, _selected, _disabled;
 
-        private bool _isHover, _isPressed, _isSelected;
+        [SerializeField] private bool _isHover, _isPressed, _isSelected;
 
 #if UNITY_EDITOR
         protected override void OnValidate()
@@ -27,11 +27,24 @@ namespace TarasK8.UI
             }
         }
 #endif
-
-        protected override void Awake()
+        protected override void OnEnable()
         {
-            base.Awake();
-            UpdateState();
+            base.OnEnable();
+            if (EventSystem.current && EventSystem.current.currentSelectedGameObject == this.gameObject)
+            {
+                _isSelected = true;
+            }
+            _isPressed = false;
+            UpdateState(instant: true);
+        }
+
+        protected override void InstantClearState()
+        {
+            base.InstantClearState();
+            _isHover = false;
+            _isPressed = false;
+            _isSelected = false;
+            UpdateState(instant: true);
         }
 
         public override void OnPointerDown(PointerEventData eventData)
@@ -87,45 +100,49 @@ namespace TarasK8.UI
             return _stateMachine;
         }
 
-        public virtual void OnPointerClick(PointerEventData eventData)
+        private void UpdateState(bool instant = false)
         {
-            
-        }
-
-        public virtual void OnSubmit(BaseEventData eventData)
-        {
-            
-        }
-
-        private void UpdateState()
-        {
-            if (gameObject.activeSelf == false ||
+            bool filter = 
                 _stateMachine == null ||
                 _transitionType != TransitionType.StateMachine ||
-                Application.isPlaying == false)
+                Application.isPlaying == false;
+
+            if (filter)
                 return;
 
-            if (base.interactable == false)
-            {
-                _stateMachine.SetState(_disabled);
-                return;
-            }
+            int stateIndex = GetStateIndex();
 
-            if (_isPressed)
+            if (instant || gameObject.activeSelf == false)
             {
-                _stateMachine.SetState(_pressed);
-            }
-            else if (_isHover)
-            {
-                _stateMachine.SetState(_hover);
-            }
-            else if (_isSelected)
-            {
-                _stateMachine.SetState(_selected);
+                _stateMachine.SetStateInstantly(stateIndex);
             }
             else
             {
-                _stateMachine.SetState(_normal);
+                _stateMachine.SetState(stateIndex);
+            }
+        }
+
+        private int GetStateIndex()
+        {
+            if (base.IsInteractable() == false)
+            {
+                return _disabled;
+            }
+            if (_isPressed)
+            {
+                return _pressed;
+            }
+            else if (_isSelected)
+            {
+                return _selected;
+            }
+            else if (_isHover)
+            {
+                return _hover;
+            }
+            else
+            {
+                return _normal;
             }
         }
 

@@ -29,10 +29,6 @@ namespace TarasK8.UI.Animations.Tweening
             }
             if (ElapsedTime - Delay >= Duration)
             {
-                if(Mathf.Approximately(Duration, 0f))
-                {
-                    Process(1f);
-                }
                 Complate();
             }
             else
@@ -43,6 +39,7 @@ namespace TarasK8.UI.Animations.Tweening
 
         public void Complate()
         {
+            Process(1f);
             IsCompleted = true;
         }
 
