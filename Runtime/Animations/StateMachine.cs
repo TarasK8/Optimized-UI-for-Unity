@@ -54,7 +54,7 @@ namespace TarasK8.UI.Animations
                     transition.Process(1f);
                 transition.Reset();
                 transition.Start();
-                transition.Process(1f);
+                transition.Complate();
             }
         }
 

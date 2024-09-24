@@ -8,7 +8,7 @@ namespace TarasK8.UI
     [ExecuteAlways]
     [SelectionBase]
     [DisallowMultipleComponent]
-    public class Selectable : UnityEngine.UI.Selectable, IPointerClickHandler, IPointerDownHandler, IPointerUpHandler, IPointerEnterHandler, IPointerExitHandler, ISubmitHandler
+    public class Selectable : UnityEngine.UI.Selectable, IPointerDownHandler, IPointerUpHandler, IPointerEnterHandler, IPointerExitHandler
     {
         [SerializeField] private TransitionType _transitionType;
         [SerializeField] private StateMachine _stateMachine;
@@ -30,15 +30,21 @@ namespace TarasK8.UI
         protected override void OnEnable()
         {
             base.OnEnable();
+            if (EventSystem.current && EventSystem.current.currentSelectedGameObject == this.gameObject)
+            {
+                _isSelected = true;
+            }
+            _isPressed = false;
             UpdateState(instant: true);
         }
 
-        protected virtual void OnApplicationFocus(bool focus)
+        protected override void InstantClearState()
         {
+            base.InstantClearState();
             _isHover = false;
             _isPressed = false;
             _isSelected = false;
-            UpdateState();
+            UpdateState(instant: true);
         }
 
         public override void OnPointerDown(PointerEventData eventData)
@@ -94,35 +100,31 @@ namespace TarasK8.UI
             return _stateMachine;
         }
 
-        public virtual void OnPointerClick(PointerEventData eventData)
-        {
-            
-        }
-
-        public virtual void OnSubmit(BaseEventData eventData)
-        {
-            
-        }
-
         private void UpdateState(bool instant = false)
         {
-            if (gameObject.activeSelf == false ||
+            bool filter = 
                 _stateMachine == null ||
                 _transitionType != TransitionType.StateMachine ||
-                Application.isPlaying == false)
+                Application.isPlaying == false;
+
+            if (filter)
                 return;
 
             int stateIndex = GetStateIndex();
 
-            if (instant)
+            if (instant || gameObject.activeSelf == false)
+            {
                 _stateMachine.SetStateInstantly(stateIndex);
+            }
             else
+            {
                 _stateMachine.SetState(stateIndex);
+            }
         }
 
         private int GetStateIndex()
         {
-            if (base.interactable == false)
+            if (base.IsInteractable() == false)
             {
                 return _disabled;
             }
@@ -130,13 +132,13 @@ namespace TarasK8.UI
             {
                 return _pressed;
             }
-            else if (_isHover)
-            {
-                return _hover;
-            }
             else if (_isSelected)
             {
                 return _selected;
+            }
+            else if (_isHover)
+            {
+                return _hover;
             }
             else
             {
