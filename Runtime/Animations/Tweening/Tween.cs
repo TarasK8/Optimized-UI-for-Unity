@@ -43,11 +43,16 @@ namespace TarasK8.UI.Animations.Tweening
             IsCompleted = true;
         }
 
-        public virtual void Reset()
+        public void Reset()
         {
             IsCompleted = false;
             IsStarted = false;
             ElapsedTime = 0f;
+        }
+
+        public void Stop()
+        {
+            IsCompleted = true;
         }
 
         public abstract void Start();

@@ -31,7 +31,7 @@ namespace TarasK8.UI.Animations.Tweening
                 tween.Update(delta);
             }
 
-            _activeTweens.RemoveAll(t => t.IsCompleted);
+            _activeTweens.RemoveAll(t => TryRemove(t));
         }
 
         public static List<Tween> GetActiveTweens()
@@ -39,11 +39,35 @@ namespace TarasK8.UI.Animations.Tweening
             return GetOrCreateInstance()._activeTweens;
         }
 
-        public static void StartTween(Tween tween)
+        public static void StartTween(Tween tween, bool instantly = false)
         {
+            bool isZeroDuration = Mathf.Approximately(tween.Duration, 0f) && Mathf.Approximately(tween.Delay, 0f);
+            if(instantly || isZeroDuration)
+            {
+                tween.Start();
+                tween.Complate();
+                return;
+            }
+
             var activeTweens = GetOrCreateInstance()._activeTweens;
-            if (activeTweens.Contains(tween)) return;
+
+            if (activeTweens.Contains(tween))
+                return;
+
             activeTweens.Add(tween);
+        }
+
+        private bool TryRemove(Tween tween)
+        {
+            if (tween.IsCompleted)
+            {
+                tween.Reset();
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
 #if UNITY_EDITOR
@@ -51,6 +75,16 @@ namespace TarasK8.UI.Animations.Tweening
 #endif
         private static TweenManager GetOrCreateInstance()
         {
+            /*
+#if UNITY_EDITOR
+            if (Application.isPlaying == false)
+            {
+                Debug.Log("is not playing");
+                return null;
+            }
+#endif
+            */
+
             if (_instance != null)
             {
                 return _instance;
