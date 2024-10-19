@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,10 +7,12 @@ namespace TarasK8.UI
     [RequireComponent(typeof(ProgressBar))]
     public class ProgressBarTrail : MonoBehaviour
     {
-        [SerializeField] private Color _increaseColor;
-        [SerializeField] private Color _decreaseColor;
-        [SerializeField] private Image _image;
         [SerializeField] private ProgressBar _trailBar;
+
+        [Header("Coloê")]
+        [SerializeField] private Image _targetImage;
+        [SerializeField] private Color _increaseColor = new(0.2663314f, 0.8962264f, 0.5550476f);
+        [SerializeField] private Color _decreaseColor = new(1f, 0.2705882f, 0.2705882f);
 
         private ProgressBar _progressBar;
 
@@ -32,17 +33,25 @@ namespace TarasK8.UI
 
         private void ProgressBar_OnValueChanged(float oldValue, float newValue)
         {
-            if(newValue > oldValue)
-            {
-                _image.color = _increaseColor;
-            }
-            else if(newValue < oldValue)
-            {
-                _image.color = _decreaseColor;
-            }
+            UpdateColor(oldValue, newValue);
 
             _trailBar.Value = newValue;
             _trailBar.Center = _progressBar.Center;
+        }
+
+        private void UpdateColor(float oldValue, float newValue)
+        {
+            if (_targetImage != null)
+            {
+                if (newValue > oldValue)
+                {
+                    _targetImage.color = _increaseColor;
+                }
+                else if (newValue < oldValue)
+                {
+                    _targetImage.color = _decreaseColor;
+                }
+            }
         }
     }
 }
