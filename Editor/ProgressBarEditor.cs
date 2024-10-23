@@ -9,7 +9,6 @@ namespace TarasK8.UI.Editor
     public class ProgressBarEditor : UnityEditor.Editor
     {
         private SerializedProperty _bar;
-        private SerializedProperty _axis;
         private SerializedProperty _direction;
         private SerializedProperty _center;
 
@@ -26,7 +25,6 @@ namespace TarasK8.UI.Editor
             _target = (ProgressBar)serializedObject.targetObject;
 
             _bar = serializedObject.FindProperty("_bar");
-            _axis = serializedObject.FindProperty("_axis");
             _direction = serializedObject.FindProperty("_direction");
             _center = serializedObject.FindProperty("_center");
 
@@ -41,7 +39,6 @@ namespace TarasK8.UI.Editor
         {
             serializedObject.Update();
             EditorGUILayout.PropertyField(_bar);
-            EditorGUILayout.PropertyField(_axis);
             EditorGUILayout.PropertyField(_direction);
             if (_direction.enumValueIndex == 2)
             {

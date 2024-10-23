@@ -8,45 +8,43 @@ namespace TarasK8.UI.Animations
         [SerializeField] private AnimationCurve _customCurve = new AnimationCurve(new Keyframe(0f, 0f), new Keyframe(1f, 1f));
         [SerializeField] private Type _type;
 
-        public float Evaluate(float t)
+        public float Evaluate(float t) => _type switch
         {
-            switch (_type)
-            {
-                case Type.Linear: return t;
-                case Type.Custom: return _customCurve.Evaluate(t);
-                case Type.InQuad: return InQuad(t);
-                case Type.OutQuad: return OutQuad(t);
-                case Type.InOutQuad: return InOutQuad(t);
-                case Type.InCubic: return InCubic(t);
-                case Type.OutCubic: return OutCubic(t);
-                case Type.InOutCubic: return InOutCubic(t);
-                case Type.InQuart: return InQuart(t);
-                case Type.OutQuart: return OutQuart(t);
-                case Type.InOutQuart: return InOutQuart(t);
-                case Type.InQuint: return InQuint(t);
-                case Type.OutQuint: return OutQuint(t);
-                case Type.InOutQuint: return InOutQuint(t);
-                case Type.InSine: return InSine(t);
-                case Type.OutSine: return OutSine(t);
-                case Type.InOutSine: return InOutSine(t);
-                case Type.InExpo: return InExpo(t);
-                case Type.OutExpo: return OutExpo(t);
-                case Type.InOutExpo: return InOutExpo(t);
-                case Type.InCirc: return InCirc(t);
-                case Type.OutCirc: return OutCirc(t);
-                case Type.InOutCirc: return InOutCirc(t);
-                case Type.InElastic: return InElastic(t);
-                case Type.OutElastic: return OutElastic(t);
-                case Type.InOutElastic: return InOutElastic(t);
-                case Type.InBack: return InBack(t);
-                case Type.OutBack: return OutBack(t);
-                case Type.InOutBack: return InOutBack(t);
-                case Type.InBounce: return InBounce(t);
-                case Type.OutBounce: return OutBounce(t);
-                case Type.InOutBounce: return InOutBounce(t);
-                default: return t;
-            }
-        }
+            Type.Linear => t,
+            Type.Custom => _customCurve.Evaluate(t),
+            Type.InQuad => InQuad(t),
+            Type.OutQuad => OutQuad(t),
+            Type.InOutQuad => InOutQuad(t),
+            Type.InCubic => InCubic(t),
+            Type.OutCubic => OutCubic(t),
+            Type.InOutCubic => InOutCubic(t),
+            Type.InQuart => InQuart(t),
+            Type.OutQuart => OutQuart(t),
+            Type.InOutQuart => InOutQuart(t),
+            Type.InQuint => InQuint(t),
+            Type.OutQuint => OutQuint(t),
+            Type.InOutQuint => InOutQuint(t),
+            Type.InSine => InSine(t),
+            Type.OutSine => OutSine(t),
+            Type.InOutSine => InOutSine(t),
+            Type.InExpo => InExpo(t),
+            Type.OutExpo => OutExpo(t),
+            Type.InOutExpo => InOutExpo(t),
+            Type.InCirc => InCirc(t),
+            Type.OutCirc => OutCirc(t),
+            Type.InOutCirc => InOutCirc(t),
+            Type.InElastic => InElastic(t),
+            Type.OutElastic => OutElastic(t),
+            Type.InOutElastic => InOutElastic(t),
+            Type.InBack => InBack(t),
+            Type.OutBack => OutBack(t),
+            Type.InOutBack => InOutBack(t),
+            Type.InBounce => InBounce(t),
+            Type.OutBounce => OutBounce(t),
+            Type.InOutBounce => InOutBounce(t),
+            _ => t,
+        };
+        
 
         // Functions stolen from: https://gist.github.com/Kryzarel/bba64622057f21a1d6d44879f9cd7bd4 xD
 

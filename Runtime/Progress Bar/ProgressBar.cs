@@ -11,8 +11,7 @@ namespace TarasK8.UI
         [SerializeField, HideInInspector] private RectTransform _rectTransform;
 
         [Header("Visual")]
-        [SerializeField] private RectTransform _bar;
-        [SerializeField] private Axis _axis;
+        [SerializeField] private BarSegment _bar;
         [SerializeField] private Direction _direction;
         [SerializeField, Range(0f, 1f)] private float _center = 0.5f;
 
@@ -26,7 +25,8 @@ namespace TarasK8.UI
         public event Action<float, float> OnValueChanged;
         public float VisualValue { get; private set; }
         public bool IsUpdateVisual { get; set; } = true;
-        public RectTransform RectTransform
+
+        private RectTransform RectTransform
         {
             get
             {
@@ -49,15 +49,6 @@ namespace TarasK8.UI
             set
             {
                 _center = Mathf.Clamp01(value);
-                SetValue(Value);
-            }
-        }
-        public Axis axis
-        {
-            get => _axis;
-            set
-            {
-                _axis = value;
                 SetValue(Value);
             }
         }
@@ -106,14 +97,14 @@ namespace TarasK8.UI
             return (-position + 1f) * _center;
         }
 
-        public float CalculatePosition(float value)
-        {
-            return Mathf.InverseLerp(MinValue, MaxValue, value);
-        }
-
         public float CalculateRightCenter(float position)
         {
             return position * (1f - _center) + _center;
+        }
+
+        public float CalculatePosition(float value)
+        {
+            return Mathf.InverseLerp(MinValue, MaxValue, value);
         }
 
         public void UpdateVisualProgress(float value)
@@ -124,36 +115,20 @@ namespace TarasK8.UI
             switch (_direction)
             {
                 case Direction.Right:
-                    SetVisualProgress(0f, position, _axis);
+                    _bar.SetPosition(0f, position);
                     break;
                 case Direction.Left:
-                    SetVisualProgress(-position + 1f, 1f, _axis);
+                    _bar.SetPosition(-position + 1f, 1f);
                     break;
                 case Direction.Center:
+                {
                     float left = CalculateLeftCenter(position);
                     float right = CalculateRightCenter(position);
-                    SetVisualProgress(left, right, _axis);
+                    _bar.SetPosition(left, right);
                     break;
+                }
                 default:
                     break;
-            }
-        }
-
-        private void SetVisualProgress(float start, float end, Axis axis)
-        {
-            if(axis == Axis.Horizontal)
-            {
-                _bar.anchorMin = new Vector2(start, 0f);
-                _bar.anchorMax = new Vector2(end, 1f);
-            }
-            else if(axis == Axis.Vertical)
-            {
-                _bar.anchorMin = new Vector2(0f, start);
-                _bar.anchorMax = new Vector2(1f, end);
-            }
-            else
-            {
-                throw new NotImplementedException();
             }
         }
 
@@ -171,12 +146,12 @@ namespace TarasK8.UI
 
         private float GetHeightOrWidthOption()
         {
-            if (_axis == Axis.Horizontal)
-                return RectTransform.rect.width;
-            else if (_axis == Axis.Vertical)
-                return RectTransform.rect.height;
-            else
-                throw new NotImplementedException();
+            return _bar.axis switch
+            {
+                BarSegment.Axis.Horizontal => RectTransform.rect.width,
+                BarSegment.Axis.Vertical => RectTransform.rect.height,
+                _ => throw new NotImplementedException()
+            };
         }
 
         public enum Direction
@@ -186,13 +161,7 @@ namespace TarasK8.UI
             Center,
         }
 
-        public enum Axis
-        {
-            Horizontal = 0,
-            Vertical = 1
-        }
-
-        public enum ValueMode
+        private enum ValueMode
         {
             Custom,
             Width,

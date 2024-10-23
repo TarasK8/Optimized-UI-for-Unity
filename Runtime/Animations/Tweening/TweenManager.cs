@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -26,12 +27,11 @@ namespace TarasK8.UI.Animations.Tweening
         {
             float delta = _ignoreTimeScale ? Time.unscaledDeltaTime : Time.timeScale;
 
+            _activeTweens.RemoveAll(TryRemove);
             foreach (var tween in _activeTweens)
             {
                 tween.Update(delta);
             }
-
-            _activeTweens.RemoveAll(t => TryRemove(t));
         }
 
         public static List<Tween> GetActiveTweens()
@@ -45,11 +45,12 @@ namespace TarasK8.UI.Animations.Tweening
             if(instantly || isZeroDuration)
             {
                 tween.Start();
-                tween.Complate();
+                tween.Complete();
                 return;
             }
 
-            var activeTweens = GetOrCreateInstance()._activeTweens;
+            var tweenManager = GetOrCreateInstance();
+            var activeTweens = tweenManager._activeTweens;
 
             if (activeTweens.Contains(tween))
                 return;
@@ -64,10 +65,8 @@ namespace TarasK8.UI.Animations.Tweening
                 tween.Reset();
                 return true;
             }
-            else
-            {
-                return false;
-            }
+
+            return false;
         }
 
 #if UNITY_EDITOR
@@ -89,14 +88,14 @@ namespace TarasK8.UI.Animations.Tweening
             {
                 return _instance;
             }
-            else
+
+            var tweenManagers = FindObjectsByType<TweenManager>(FindObjectsSortMode.None);
+                
+            switch (tweenManagers.Length)
             {
-                TweenManager[] tweenManagers = FindObjectsByType<TweenManager>(FindObjectsSortMode.None);
-                if(tweenManagers.Length == 1)
-                {
+                case 1:
                     return tweenManagers[0];
-                }
-                if (tweenManagers.Length > 1)
+                case > 1:
                 {
                     for (int i = 1; i < tweenManagers.Length; i++)
                     {
@@ -105,7 +104,7 @@ namespace TarasK8.UI.Animations.Tweening
                     Debug.LogError("There can be only one UI Tween Manager in a scene! Surplus objects were destroyed.");
                     return tweenManagers[0];
                 }
-                else
+                default:
                 {
                     var obj = new GameObject("UI Tween Manager", typeof(TweenManager));
                     TweenManager tweenManager = obj.GetComponent<TweenManager>();

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace TarasK8.UI.Animations.Tweening
@@ -29,7 +30,7 @@ namespace TarasK8.UI.Animations.Tweening
             }
             if (ElapsedTime - Delay >= Duration)
             {
-                Complate();
+                Complete();
             }
             else
             {
@@ -37,7 +38,7 @@ namespace TarasK8.UI.Animations.Tweening
             }
         }
 
-        public void Complate()
+        public void Complete()
         {
             Process(1f);
             IsCompleted = true;

@@ -8,6 +8,8 @@ namespace TarasK8.UI
     [RequireComponent(typeof(ProgressBar))]
     public class ProgressBarAnimation : MonoBehaviour
     {
+        [SerializeField] private bool _completeWhenPlayIncrease = false;
+        [SerializeField] private bool _completeWhenPlayDecrease = false;
         [SerializeField] private Animation _animationIncrease;
         [SerializeField] private Animation _animationDecrease;
 
@@ -28,7 +30,7 @@ namespace TarasK8.UI
         {
             _progressBar.OnValueChanged -= ProgressBar_OnValueChanged;
             _progressBar.IsUpdateVisual = true;
-            _animationIncrease.Complate();
+            _animationIncrease.Complete();
         }
 
         private void ProgressBar_OnValueChanged(float oldValue, float value)
@@ -49,16 +51,30 @@ namespace TarasK8.UI
 
         public void PlayDecrease(float targetValue)
         {
+            if (_completeWhenPlayDecrease)
+            {
+                if(_animationDecrease.IsCompleted == false)
+                    _animationDecrease.Process(1f);
+                if(_animationIncrease.IsCompleted == false)
+                    _animationIncrease.Complete();
+            }
+
             _animationDecrease.Initialize(_progressBar, targetValue);
-            _animationIncrease.Stop();
             _animationDecrease.Reset();
             TweenManager.StartTween(_animationDecrease);
         }
 
         public void PlayIncrease(float targetValue)
         {
+            if (_completeWhenPlayIncrease)
+            {
+                if(_animationIncrease.IsCompleted == false)
+                    _animationIncrease.Process(1f);
+                if(_animationDecrease.IsCompleted == false)
+                    _animationDecrease.Complete();
+            }
+
             _animationIncrease.Initialize(_progressBar, targetValue);
-            _animationDecrease.Stop();
             _animationIncrease.Reset();
             TweenManager.StartTween(_animationIncrease);
         }

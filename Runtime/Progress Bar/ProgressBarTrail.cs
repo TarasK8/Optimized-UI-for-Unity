@@ -9,7 +9,7 @@ namespace TarasK8.UI
     {
         [SerializeField] private ProgressBar _trailBar;
 
-        [Header("Coloê")]
+        [Header("Color")]
         [SerializeField] private Image _targetImage;
         [SerializeField] private Color _increaseColor = new(0.2663314f, 0.8962264f, 0.5550476f);
         [SerializeField] private Color _decreaseColor = new(1f, 0.2705882f, 0.2705882f);
