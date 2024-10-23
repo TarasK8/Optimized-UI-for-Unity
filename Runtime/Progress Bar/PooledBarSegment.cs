@@ -1,16 +1,16 @@
-using System;
 using TarasK8.UI.Animations.Tweening;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.Pool;
 
 namespace TarasK8.UI
 {
     public class PooledBarSegment : MonoBehaviour
     {
-        private static readonly int Increase = Animator.StringToHash("Increase");
-        private static readonly int Decrease = Animator.StringToHash("Decrease");
         [SerializeField] private float _lifeTimeDuration = 1.5f;
-        [SerializeField] private Animator _animator;
+        [field: Space]
+        [field: SerializeField] public UnityEvent OnIncrease { get; private set; }
+        [field: SerializeField] public UnityEvent OnDecrease { get; private set; }
         
         private WaitTween _lifeTime;
         private BarSegment _bar;
@@ -33,14 +33,14 @@ namespace TarasK8.UI
             ResetLifetime();
         }
 
-        public void IncreaseAnimation()
+        public void Increase()
         {
-            _animator.SetTrigger(Increase);
+            OnIncrease?.Invoke();
         }
 
-        public void DecreaseAnimation()
+        public void Decrease()
         {
-            _animator.SetTrigger(Decrease);
+            OnDecrease?.Invoke();
         }
 
         public void ResetLifetime()
@@ -59,27 +59,6 @@ namespace TarasK8.UI
         {
             _lifeTime.Complete();
             Destroy(gameObject);
-        }
-
-        private class WaitTween : Tween
-        {
-            public override float Delay { get; protected set; }
-            public override float Duration { get; protected set; }
-
-            private readonly Action _action;
-
-            public WaitTween(Action action, float delay)
-            {
-                Delay = delay;
-                _action = action;
-            }
-
-            public override void Start()
-            {
-                _action?.Invoke();
-            }
-
-            public override void Process(float t) { }
         }
     }
 }

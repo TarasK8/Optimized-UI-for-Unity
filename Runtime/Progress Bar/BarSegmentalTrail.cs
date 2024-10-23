@@ -65,9 +65,9 @@ namespace TarasK8.UI
                 segment.ResetLifetime();
                 
                 if(newPosition > oldPosition)
-                    segment.IncreaseAnimation();
+                    segment.Increase();
                 else
-                    segment.DecreaseAnimation();
+                    segment.Decrease();
                 
                 segment.Bar.SetPosition(oldPosition, newPosition);
                 _lastSpawnedStartSegment = segment;
