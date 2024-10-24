@@ -70,7 +70,7 @@ namespace TarasK8.UI
 #if UNITY_EDITOR
         private void Update()
         {
-            if(_bar != null && IsUpdateVisual)
+            if(Application.isPlaying == false && _bar != null && IsUpdateVisual)
                 UpdateVisualProgress(Value);
         }
 #endif
@@ -115,11 +115,15 @@ namespace TarasK8.UI
             switch (_direction)
             {
                 case Direction.Right:
+                {
                     _bar.SetPosition(0f, position);
                     break;
+                }
                 case Direction.Left:
+                {
                     _bar.SetPosition(-position + 1f, 1f);
                     break;
+                }
                 case Direction.Center:
                 {
                     float left = CalculateLeftCenter(position);
@@ -128,7 +132,7 @@ namespace TarasK8.UI
                     break;
                 }
                 default:
-                    break;
+                    throw new ArgumentOutOfRangeException();
             }
         }
 
@@ -140,7 +144,7 @@ namespace TarasK8.UI
                 ValueMode.Width => RectTransform.rect.width,
                 ValueMode.Height => RectTransform.rect.height,
                 ValueMode.HeightOrWidth => GetHeightOrWidthOption(),
-                _ => throw new NotImplementedException(),
+                _ => throw new ArgumentOutOfRangeException(),
             };
         }
 
@@ -150,7 +154,7 @@ namespace TarasK8.UI
             {
                 BarSegment.Axis.Horizontal => RectTransform.rect.width,
                 BarSegment.Axis.Vertical => RectTransform.rect.height,
-                _ => throw new NotImplementedException()
+                _ => throw new ArgumentOutOfRangeException()
             };
         }
 
