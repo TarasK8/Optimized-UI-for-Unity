@@ -9,6 +9,10 @@ namespace TarasK8.UI
     {
         [SerializeField] private BarSegment _targetSegment;
         [SerializeField] private PooledBarSegment _segmentPrefab;
+        [Header("Active")]
+        [SerializeField] private bool _increasing = true;
+        [SerializeField] private bool _decreasing = true;
+        [Header("Optimization")]
         [SerializeField] private int _maxSegmentCount = 20;
         [SerializeField, Range(0f, 1f)] private float _mergeThreshold = 0.015f;
         [SerializeField, Min(0f)] private float _mergeTime = 0.15f;
@@ -54,13 +58,17 @@ namespace TarasK8.UI
         private void BarSegment_OnStartPositionChange(float oldPosition, float newPosition)
         {
             bool isIncrease = newPosition < oldPosition;
-            HandlePositionChange(oldPosition, newPosition, isIncrease, ref _lastSpawnedStartSegment, ref _lastSpawnedStartTime);
+            
+            if((isIncrease && _increasing) || (!isIncrease && _decreasing))
+                HandlePositionChange(oldPosition, newPosition, isIncrease, ref _lastSpawnedStartSegment, ref _lastSpawnedStartTime);
         }
 
         private void BarSegment_OnEndPositionChange(float oldPosition, float newPosition)
         {
             bool isIncrease = newPosition > oldPosition;
-            HandlePositionChange(oldPosition, newPosition, isIncrease, ref _lastSpawnedEndSegment, ref _lastSpawnedEndTime);
+            
+            if((isIncrease && _increasing) || (!isIncrease && _decreasing))
+                HandlePositionChange(oldPosition, newPosition, isIncrease, ref _lastSpawnedEndSegment, ref _lastSpawnedEndTime);
         }
 
         private void HandlePositionChange(float oldPosition, float newPosition, bool isIncrease, ref PooledBarSegment lastSpawnedSegment, ref float lastSpawnedTime)

@@ -3,6 +3,8 @@ using UnityEngine;
 
 namespace TarasK8.UI
 {
+    [DisallowMultipleComponent]
+    [RequireComponent(typeof(RectTransform))]
     public class BarSegment : MonoBehaviour
     {
         [SerializeField, HideInInspector] private RectTransform _rectTransform;
