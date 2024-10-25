@@ -1,7 +1,6 @@
 using System;
 using UnityEngine;
 using UnityEngine.Pool;
-using UnityEngine.Serialization;
 
 namespace TarasK8.UI
 {
@@ -9,17 +8,18 @@ namespace TarasK8.UI
     [RequireComponent(typeof(RectTransform))]
     public class BarSegmentalTrail : MonoBehaviour
     {
-        [SerializeField] private ProgressBar _progressBar;
+        [SerializeField] private BarSegment _targetSegment;
         [SerializeField] private PooledBarSegment _segmentPrefab;
-        [SerializeField] private int _segmentCount;
-        [SerializeField, Range(0f, 1f)] private float _segmentsMergeThreshold = 0.1f;
+        [SerializeField] private int _maxSegmentCount = 20;
+        [SerializeField, Range(0f, 1f)] private float _mergeThreshold = 0.015f;
+        [SerializeField, Min(0f)] private float _mergeTime = 0.15f;
 
         private RectTransform _rectTransform;
         private ObjectPool<PooledBarSegment> _segments;
         private PooledBarSegment _lastSpawnedStartSegment;
-        // private float _lastSpawnedStartTime;
+        private float _lastSpawnedStartTime;
         private PooledBarSegment _lastSpawnedEndSegment;
-        // private float _lastSpawnedEndTime;
+        private float _lastSpawnedEndTime;
 
         private void Awake()
         {
@@ -29,29 +29,31 @@ namespace TarasK8.UI
                 actionOnGet: ActionOnGet,
                 actionOnRelease: OnReleaseSegment,
                 actionOnDestroy: ActionOnDestroy,
-                defaultCapacity: _segmentCount,
-                maxSize: _segmentCount,
+                defaultCapacity: _maxSegmentCount,
+                maxSize: _maxSegmentCount,
                 collectionCheck: true);
         }
 
         private void OnEnable()
         {
-            _progressBar.OnValueChanged += ProgressBar_OnValueChange;
+            _targetSegment.OnStartPositionChange += BarSegment_OnStartPositionChange;
+            _targetSegment.OnEndPositionChange += BarSegment_OnEndPositionChange;
         }
 
         private void OnDisable()
         {
-            _progressBar.OnValueChanged -= ProgressBar_OnValueChange;
+            _targetSegment.OnStartPositionChange -= BarSegment_OnStartPositionChange;
+            _targetSegment.OnEndPositionChange -= BarSegment_OnEndPositionChange;
         }
 
-        private void ProgressBar_OnValueChange(float oldValue, float newValue)
+        private void BarSegment_OnStartPositionChange(float oldPosition, float newPosition)
         {
-            float oldPosition = _progressBar.CalculatePosition(oldValue);
-            float newPosition = _progressBar.CalculatePosition(newValue);
+            if(Mathf.Approximately(oldPosition, newPosition))
+                return;
             
             float lenght = Mathf.Abs(newPosition - oldPosition);
             
-            if (lenght < _segmentsMergeThreshold && _lastSpawnedStartSegment != null)
+            if (IsCanMarge(lenght, _lastSpawnedStartTime) && _lastSpawnedStartSegment != null)
             {
                 if(newPosition > _lastSpawnedStartSegment.Bar.PositionStart)
                     _lastSpawnedStartSegment.Bar.PositionEnd = newPosition;
@@ -64,15 +66,51 @@ namespace TarasK8.UI
                 var segment = _segments.Get();
                 segment.ResetLifetime();
                 
-                if(newPosition > oldPosition)
+                if(newPosition < oldPosition)
                     segment.Increase();
                 else
                     segment.Decrease();
                 
                 segment.Bar.SetPosition(oldPosition, newPosition);
                 _lastSpawnedStartSegment = segment;
-                
+                _lastSpawnedStartTime = Time.time;
             }
+        }
+
+        private void BarSegment_OnEndPositionChange(float oldPosition, float newPosition)
+        {
+            if(Mathf.Approximately(oldPosition, newPosition))
+                return;
+            
+            float lenght = Mathf.Abs(newPosition - oldPosition);
+            Debug.Log($"Lenght {lenght}; IsCanMarge: {IsCanMarge(lenght, _lastSpawnedEndTime)}");
+            if (IsCanMarge(lenght, _lastSpawnedEndTime) && _lastSpawnedEndSegment != null)
+            {
+                if(newPosition > _lastSpawnedEndSegment.Bar.PositionStart)
+                    _lastSpawnedEndSegment.Bar.PositionEnd = newPosition;
+                else
+                    _lastSpawnedEndSegment.Bar.PositionStart = newPosition;
+                _lastSpawnedEndSegment.ResetLifetime();
+            }
+            else
+            {
+                var segment = _segments.Get();
+                segment.ResetLifetime();
+                
+                if(newPosition > oldPosition)
+                    segment.Increase();
+                else
+                    segment.Decrease();
+                
+                segment.Bar.SetPosition(oldPosition, newPosition);
+                _lastSpawnedEndSegment = segment;
+                _lastSpawnedEndTime = Time.time;
+            }
+        }
+
+        private bool IsCanMarge(float lenght, float lastSpawnedTime)
+        {
+            return lenght < _mergeThreshold && Time.time < lastSpawnedTime + _mergeTime;
         }
 
         private PooledBarSegment CreateSegment()
