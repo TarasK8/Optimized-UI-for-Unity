@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnityEngine.Pool;
 
@@ -36,81 +35,68 @@ namespace TarasK8.UI
 
         private void OnEnable()
         {
-            _targetSegment.OnStartPositionChange += BarSegment_OnStartPositionChange;
-            _targetSegment.OnEndPositionChange += BarSegment_OnEndPositionChange;
+            if (_targetSegment != null)
+            {
+                _targetSegment.OnStartPositionChange += BarSegment_OnStartPositionChange;
+                _targetSegment.OnEndPositionChange += BarSegment_OnEndPositionChange;
+            }
         }
 
         private void OnDisable()
         {
-            _targetSegment.OnStartPositionChange -= BarSegment_OnStartPositionChange;
-            _targetSegment.OnEndPositionChange -= BarSegment_OnEndPositionChange;
+            if (_targetSegment != null)
+            {
+                _targetSegment.OnStartPositionChange -= BarSegment_OnStartPositionChange;
+                _targetSegment.OnEndPositionChange -= BarSegment_OnEndPositionChange;
+            }
         }
 
         private void BarSegment_OnStartPositionChange(float oldPosition, float newPosition)
         {
-            if(Mathf.Approximately(oldPosition, newPosition))
-                return;
-            
-            float lenght = Mathf.Abs(newPosition - oldPosition);
-            
-            if (IsCanMarge(lenght, _lastSpawnedStartTime) && _lastSpawnedStartSegment != null)
-            {
-                if(newPosition > _lastSpawnedStartSegment.Bar.PositionStart)
-                    _lastSpawnedStartSegment.Bar.PositionEnd = newPosition;
-                else
-                    _lastSpawnedStartSegment.Bar.PositionStart = newPosition;
-                _lastSpawnedStartSegment.ResetLifetime();
-            }
-            else
-            {
-                var segment = _segments.Get();
-                segment.ResetLifetime();
-                
-                if(newPosition < oldPosition)
-                    segment.Increase();
-                else
-                    segment.Decrease();
-                
-                segment.Bar.SetPosition(oldPosition, newPosition);
-                _lastSpawnedStartSegment = segment;
-                _lastSpawnedStartTime = Time.time;
-            }
+            bool isIncrease = newPosition < oldPosition;
+            HandlePositionChange(oldPosition, newPosition, isIncrease, ref _lastSpawnedStartSegment, ref _lastSpawnedStartTime);
         }
 
         private void BarSegment_OnEndPositionChange(float oldPosition, float newPosition)
         {
-            if(Mathf.Approximately(oldPosition, newPosition))
+            bool isIncrease = newPosition > oldPosition;
+            HandlePositionChange(oldPosition, newPosition, isIncrease, ref _lastSpawnedEndSegment, ref _lastSpawnedEndTime);
+        }
+
+        private void HandlePositionChange(float oldPosition, float newPosition, bool isIncrease, ref PooledBarSegment lastSpawnedSegment, ref float lastSpawnedTime)
+        {
+            if (Mathf.Approximately(oldPosition, newPosition))
                 return;
-            
-            float lenght = Mathf.Abs(newPosition - oldPosition);
-            Debug.Log($"Lenght {lenght}; IsCanMarge: {IsCanMarge(lenght, _lastSpawnedEndTime)}");
-            if (IsCanMarge(lenght, _lastSpawnedEndTime) && _lastSpawnedEndSegment != null)
+
+            float length = Mathf.Abs(newPosition - oldPosition);
+
+            if (CanMerge(length, lastSpawnedTime) && lastSpawnedSegment != null)
             {
-                if(newPosition > _lastSpawnedEndSegment.Bar.PositionStart)
-                    _lastSpawnedEndSegment.Bar.PositionEnd = newPosition;
+                if (newPosition > lastSpawnedSegment.Bar.PositionStart)
+                    lastSpawnedSegment.Bar.PositionEnd = newPosition;
                 else
-                    _lastSpawnedEndSegment.Bar.PositionStart = newPosition;
-                _lastSpawnedEndSegment.ResetLifetime();
+                    lastSpawnedSegment.Bar.PositionStart = newPosition;
+                lastSpawnedSegment.ResetLifetime();
             }
             else
             {
                 var segment = _segments.Get();
                 segment.ResetLifetime();
-                
-                if(newPosition > oldPosition)
+
+                if (isIncrease)
                     segment.Increase();
                 else
                     segment.Decrease();
-                
+
                 segment.Bar.SetPosition(oldPosition, newPosition);
-                _lastSpawnedEndSegment = segment;
-                _lastSpawnedEndTime = Time.time;
+                lastSpawnedSegment = segment;
+                lastSpawnedTime = Time.time;
             }
         }
 
-        private bool IsCanMarge(float lenght, float lastSpawnedTime)
+        private bool CanMerge(float length, float lastSpawnedTime)
         {
-            return lenght < _mergeThreshold && Time.time < lastSpawnedTime + _mergeTime;
+            return length < _mergeThreshold && Time.time < lastSpawnedTime + _mergeTime;
         }
 
         private PooledBarSegment CreateSegment()
@@ -127,11 +113,11 @@ namespace TarasK8.UI
 
         private void OnReleaseSegment(PooledBarSegment segment)
         {
-            if(_lastSpawnedStartSegment == segment)
+            if (_lastSpawnedStartSegment == segment)
                 _lastSpawnedStartSegment = null;
-            if(_lastSpawnedEndSegment == segment)
+            if (_lastSpawnedEndSegment == segment)
                 _lastSpawnedEndSegment = null;
-            
+
             segment.gameObject.SetActive(false);
         }
 
