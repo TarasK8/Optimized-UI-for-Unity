@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 namespace TarasK8.UI
 {
-    [AddComponentMenu("Optimized UI/Progress Bar Trail")]
+    [AddComponentMenu("Optimized UI/Progress Bar/Progress Bar Trail")]
     [RequireComponent(typeof(ProgressBar))]
     public class ProgressBarTrail : MonoBehaviour
     {

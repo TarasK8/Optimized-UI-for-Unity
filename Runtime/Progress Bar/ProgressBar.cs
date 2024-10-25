@@ -3,14 +3,13 @@ using UnityEngine;
 
 namespace TarasK8.UI
 {
-    [AddComponentMenu("Optimized UI/Progress Bar")]
+    [AddComponentMenu("Optimized UI/Progress Bar/Progress Bar")]
     [ExecuteInEditMode]
     [RequireComponent(typeof(RectTransform))]
     public class ProgressBar : MonoBehaviour
     {
         [SerializeField, HideInInspector] private RectTransform _rectTransform;
-
-        [Header("Visual")]
+        
         [SerializeField] private BarSegment _bar;
         [SerializeField] private Direction _direction;
         [SerializeField, Range(0f, 1f)] private float _center = 0.5f;
@@ -23,8 +22,6 @@ namespace TarasK8.UI
 
 
         public event Action<float, float> OnValueChanged;
-        public float VisualValue { get; private set; }
-        public bool IsUpdateVisual { get; set; } = true;
 
         private RectTransform RectTransform
         {
@@ -62,15 +59,10 @@ namespace TarasK8.UI
             }
         }
 
-        private void Awake()
-        {
-            VisualValue = Value;
-        }
-
 #if UNITY_EDITOR
         private void Update()
         {
-            if(Application.isPlaying == false && _bar != null && IsUpdateVisual)
+            if(Application.isPlaying == false && _bar != null)
                 UpdateVisualProgress(Value);
         }
 #endif
@@ -84,9 +76,8 @@ namespace TarasK8.UI
         {
             value = Mathf.Clamp(value, MinValue, MaxValue);
             float oldValue = _value;
-
-            if(IsUpdateVisual)
-                UpdateVisualProgress(value);
+            
+            UpdateVisualProgress(value);
 
             _value = value;
             OnValueChanged?.Invoke(oldValue, value);
@@ -110,7 +101,6 @@ namespace TarasK8.UI
         public void UpdateVisualProgress(float value)
         {
             var position = CalculatePosition(value);
-            VisualValue = value;
 
             switch (_direction)
             {

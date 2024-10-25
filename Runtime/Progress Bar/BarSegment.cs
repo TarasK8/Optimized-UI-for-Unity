@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace TarasK8.UI
 {
+    [AddComponentMenu("Optimized UI/Progress Bar/Bar Segment")]
     [DisallowMultipleComponent]
     [RequireComponent(typeof(RectTransform))]
     public class BarSegment : MonoBehaviour

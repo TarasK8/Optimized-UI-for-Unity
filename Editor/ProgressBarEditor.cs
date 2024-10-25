@@ -38,6 +38,7 @@ namespace TarasK8.UI.Editor
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
+            EditorGUILayout.LabelField("Visual", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(_bar);
             EditorGUILayout.PropertyField(_direction);
             if (_direction.enumValueIndex == 2)

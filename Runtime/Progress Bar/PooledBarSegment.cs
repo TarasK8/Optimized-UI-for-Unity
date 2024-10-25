@@ -5,6 +5,8 @@ using UnityEngine.Pool;
 
 namespace TarasK8.UI
 {
+    [AddComponentMenu("Optimized UI/Progress Bar/Pooled Bar Segment")]
+    [RequireComponent(typeof(BarSegment))]
     public class PooledBarSegment : MonoBehaviour
     {
         [SerializeField] private float _lifeTimeDuration = 1.5f;

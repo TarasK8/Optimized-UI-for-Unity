@@ -6,6 +6,7 @@ using TarasK8.UI.Utilites;
 
 namespace TarasK8.UI
 {
+    [AddComponentMenu("Optimized UI/Progress Bar/Bar Segment Animated")]
     public class BarSegmentAnimated : BarSegment
     {
         [Header("Animation Settings")]

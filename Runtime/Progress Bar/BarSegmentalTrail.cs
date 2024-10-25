@@ -3,7 +3,7 @@ using UnityEngine.Pool;
 
 namespace TarasK8.UI
 {
-    [AddComponentMenu("Optimized UI/Bar Segmental Trail")]
+    [AddComponentMenu("Optimized UI/Progress Bar/Bar Segmental Trail")]
     [RequireComponent(typeof(RectTransform))]
     public class BarSegmentalTrail : MonoBehaviour
     {
