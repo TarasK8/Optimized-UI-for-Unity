@@ -3,9 +3,9 @@ using UnityEngine.Pool;
 
 namespace TarasK8.UI
 {
-    [AddComponentMenu("Optimized UI/Progress Bar/Bar Segmental Trail")]
+    [AddComponentMenu("Optimized UI/Progress Bar/Bar Multi Segment Trail")]
     [RequireComponent(typeof(RectTransform))]
-    public class BarSegmentalTrail : MonoBehaviour
+    public class BarMultiSegmentTrail : MonoBehaviour
     {
         [SerializeField] private BarSegment _targetSegment;
         [SerializeField] private PooledBarSegment _segmentPrefab;
@@ -39,20 +39,14 @@ namespace TarasK8.UI
 
         private void OnEnable()
         {
-            if (_targetSegment != null)
-            {
-                _targetSegment.OnStartPositionChange += BarSegment_OnStartPositionChange;
-                _targetSegment.OnEndPositionChange += BarSegment_OnEndPositionChange;
-            }
+            _targetSegment.OnStartPositionChange += BarSegment_OnStartPositionChange;
+            _targetSegment.OnEndPositionChange += BarSegment_OnEndPositionChange;
         }
 
         private void OnDisable()
         {
-            if (_targetSegment != null)
-            {
-                _targetSegment.OnStartPositionChange -= BarSegment_OnStartPositionChange;
-                _targetSegment.OnEndPositionChange -= BarSegment_OnEndPositionChange;
-            }
+            _targetSegment.OnStartPositionChange -= BarSegment_OnStartPositionChange;
+            _targetSegment.OnEndPositionChange -= BarSegment_OnEndPositionChange;
         }
 
         private void BarSegment_OnStartPositionChange(float oldPosition, float newPosition)
