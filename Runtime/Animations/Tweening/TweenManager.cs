@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -26,12 +27,11 @@ namespace TarasK8.UI.Animations.Tweening
         {
             float delta = _ignoreTimeScale ? Time.unscaledDeltaTime : Time.timeScale;
 
+            _activeTweens.RemoveAll(TryRemove);
             foreach (var tween in _activeTweens)
             {
                 tween.Update(delta);
             }
-
-            _activeTweens.RemoveAll(t => t.IsCompleted);
         }
 
         public static List<Tween> GetActiveTweens()
@@ -39,11 +39,34 @@ namespace TarasK8.UI.Animations.Tweening
             return GetOrCreateInstance()._activeTweens;
         }
 
-        public static void StartTween(Tween tween)
+        public static void StartTween(Tween tween, bool instantly = false)
         {
-            var activeTweens = GetOrCreateInstance()._activeTweens;
-            if (activeTweens.Contains(tween)) return;
+            bool isZeroDuration = Mathf.Approximately(tween.Duration, 0f) && Mathf.Approximately(tween.Delay, 0f);
+            if(instantly || isZeroDuration)
+            {
+                tween.Start();
+                tween.Complete();
+                return;
+            }
+
+            var tweenManager = GetOrCreateInstance();
+            var activeTweens = tweenManager._activeTweens;
+
+            if (activeTweens.Contains(tween))
+                return;
+
             activeTweens.Add(tween);
+        }
+
+        private bool TryRemove(Tween tween)
+        {
+            if (tween.IsCompleted)
+            {
+                tween.Reset();
+                return true;
+            }
+
+            return false;
         }
 
 #if UNITY_EDITOR
@@ -51,18 +74,28 @@ namespace TarasK8.UI.Animations.Tweening
 #endif
         private static TweenManager GetOrCreateInstance()
         {
+            /*
+#if UNITY_EDITOR
+            if (Application.isPlaying == false)
+            {
+                Debug.Log("is not playing");
+                return null;
+            }
+#endif
+            */
+
             if (_instance != null)
             {
                 return _instance;
             }
-            else
+
+            var tweenManagers = FindObjectsByType<TweenManager>(FindObjectsSortMode.None);
+                
+            switch (tweenManagers.Length)
             {
-                TweenManager[] tweenManagers = FindObjectsByType<TweenManager>(FindObjectsSortMode.None);
-                if(tweenManagers.Length == 1)
-                {
+                case 1:
                     return tweenManagers[0];
-                }
-                if (tweenManagers.Length > 1)
+                case > 1:
                 {
                     for (int i = 1; i < tweenManagers.Length; i++)
                     {
@@ -71,7 +104,7 @@ namespace TarasK8.UI.Animations.Tweening
                     Debug.LogError("There can be only one UI Tween Manager in a scene! Surplus objects were destroyed.");
                     return tweenManagers[0];
                 }
-                else
+                default:
                 {
                     var obj = new GameObject("UI Tween Manager", typeof(TweenManager));
                     TweenManager tweenManager = obj.GetComponent<TweenManager>();
