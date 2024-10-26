@@ -6,22 +6,16 @@ namespace TarasK8.UI
     [AddComponentMenu("Optimized UI/Progress Bar/Progress Bar")]
     [ExecuteInEditMode]
     [RequireComponent(typeof(RectTransform))]
-    public class ProgressBar : MonoBehaviour
+    public class ProgressBar : ProgressBarBase
     {
         [SerializeField, HideInInspector] private RectTransform _rectTransform;
         
         [SerializeField] private BarSegment _bar;
         [SerializeField] private Direction _direction;
         [SerializeField, Range(0f, 1f)] private float _center = 0.5f;
-
-        [SerializeField] private float _minValue = 0f;
+        
         [SerializeField] private ValueMode _minValueMode = ValueMode.Custom;
-        [SerializeField] private float _maxValue = 1f;
         [SerializeField] private ValueMode _maxValueMode = ValueMode.Custom;
-        [SerializeField] private float _value = 1f;
-
-
-        public event Action<float, float> OnValueChanged;
 
         private RectTransform RectTransform
         {
@@ -33,20 +27,16 @@ namespace TarasK8.UI
             }
         }
 
-        public float MinValue => GetValueByMode(_minValueMode, _minValue);
-        public float MaxValue => GetValueByMode(_maxValueMode, _maxValue);
-        public float Value
-        {
-            get => _value;
-            set => SetValue(value);
-        }
+        public override float MinValue => GetValueByMode(_minValueMode, base.MinValue);
+        public override float MaxValue => GetValueByMode(_maxValueMode, base.MaxValue);
+        
         public float Center
         {
             get => _center;
             set
             {
                 _center = Mathf.Clamp01(value);
-                SetValue(Value);
+                UpdateVisualProgress(Value);
             }
         }
         public Direction direction
@@ -55,7 +45,7 @@ namespace TarasK8.UI
             set
             {
                 _direction = value;
-                SetValue(Value);
+                UpdateVisualProgress(Value);
             }
         }
 
@@ -67,20 +57,9 @@ namespace TarasK8.UI
         }
 #endif
 
-        public void AddValue(float value)
+        protected override void OnSetValue(float oldValue, float newValue)
         {
-            Value += value;
-        }
-
-        public void SetValue(float value)
-        {
-            value = Mathf.Clamp(value, MinValue, MaxValue);
-            float oldValue = _value;
-            
-            UpdateVisualProgress(value);
-
-            _value = value;
-            OnValueChanged?.Invoke(oldValue, value);
+            UpdateVisualProgress(newValue);
         }
 
         public float CalculateLeftCenter(float position)
@@ -91,11 +70,6 @@ namespace TarasK8.UI
         public float CalculateRightCenter(float position)
         {
             return position * (1f - _center) + _center;
-        }
-
-        public float CalculatePosition(float value)
-        {
-            return Mathf.InverseLerp(MinValue, MaxValue, value);
         }
 
         public void UpdateVisualProgress(float value)
