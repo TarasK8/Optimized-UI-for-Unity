@@ -10,7 +10,6 @@ namespace TarasK8.UI
     [ExecuteInEditMode]
     public class MultiProgressBar : ProgressBarBase
     {
-        [Header("Visual")]
         [SerializeField] private bool _ignoreLenght = true;
         [SerializeField] private bool _reversed = false;
         [SerializeField] private List<ProgressBarBase> _bars;
@@ -38,6 +37,9 @@ namespace TarasK8.UI
 
         protected override void OnSetValue(float oldValue, float newValue)
         {
+            if(_bars.Count <= 0)
+                return;
+            
             float position = CalculatePosition(newValue);
             float allLength = _bars.Sum(GetLength);
             
@@ -71,19 +73,19 @@ namespace TarasK8.UI
 #if UNITY_EDITOR
         
         [ContextMenu("Sort Bars List By Position X")]
-        private void SortListByX()
+        public void SortListByX()
         {
             _bars.Sort((a, b) => a.transform.position.x.CompareTo(b.transform.position.x));
         }
         
         [ContextMenu("Sort Bars List By Position Y")]
-        private void SortListByY()
+        public void SortListByY()
         {
             _bars.Sort((a, b) => a.transform.position.y.CompareTo(b.transform.position.y));
         }
         
         [ContextMenu("Reverse Bars List")]
-        private void ReverseList()
+        public void ReverseList()
         {
             _bars.Reverse();
         }

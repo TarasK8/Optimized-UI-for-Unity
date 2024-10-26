@@ -5,7 +5,6 @@ namespace TarasK8.UI
 {
     public abstract class ProgressBarBase : MonoBehaviour
     {
-        [Header("Value")]
         [SerializeField] private float _minValue = 0f;
         [SerializeField] private float _maxValue = 1f;
         [SerializeField] private float _value = 1f;
