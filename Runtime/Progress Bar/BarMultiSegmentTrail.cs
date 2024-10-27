@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Pool;
+using UnityEngine.Serialization;
 
 namespace TarasK8.UI
 {
@@ -7,7 +8,7 @@ namespace TarasK8.UI
     [RequireComponent(typeof(RectTransform))]
     public class BarMultiSegmentTrail : MonoBehaviour
     {
-        [SerializeField] private BarSegment _targetSegment;
+        [SerializeField] private BarSegment _trackingBar;
         [SerializeField] private PooledBarSegment _segmentPrefab;
         [Header("Active")]
         [SerializeField] private bool _increasing = true;
@@ -39,14 +40,14 @@ namespace TarasK8.UI
 
         private void OnEnable()
         {
-            _targetSegment.OnStartPositionChange += BarSegment_OnStartPositionChange;
-            _targetSegment.OnEndPositionChange += BarSegment_OnEndPositionChange;
+            _trackingBar.OnStartPositionChange += BarSegment_OnStartPositionChange;
+            _trackingBar.OnEndPositionChange += BarSegment_OnEndPositionChange;
         }
 
         private void OnDisable()
         {
-            _targetSegment.OnStartPositionChange -= BarSegment_OnStartPositionChange;
-            _targetSegment.OnEndPositionChange -= BarSegment_OnEndPositionChange;
+            _trackingBar.OnStartPositionChange -= BarSegment_OnStartPositionChange;
+            _trackingBar.OnEndPositionChange -= BarSegment_OnEndPositionChange;
         }
 
         private void BarSegment_OnStartPositionChange(float oldPosition, float newPosition)
