@@ -94,6 +94,9 @@ namespace TarasK8.UI
 
         private void PlayIncrease((Animation increase, Animation decrease) animation, float from, float to)
         {
+            if(Mathf.Approximately(from, to))
+                return;
+            
             if (_increaseCompleteBeforePlay)
             {
                 if(animation.increase.IsCompleted == false)
@@ -111,6 +114,9 @@ namespace TarasK8.UI
 
         private void PlayDecrease((Animation increase, Animation decrease) animation, float from, float to)
         {
+            if(Mathf.Approximately(from, to))
+                return;
+            
             if (_decreaseCompleteBeforePlay)
             {
                 if(animation.decrease.IsCompleted == false)

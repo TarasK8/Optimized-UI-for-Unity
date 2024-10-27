@@ -122,6 +122,11 @@ namespace TarasK8.UI
             };
         }
 
+        protected override bool ShouldFilterSameValues()
+        {
+            return true;
+        }
+
         public enum Direction
         {
             Right,
