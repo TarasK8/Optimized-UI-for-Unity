@@ -17,6 +17,7 @@ namespace TarasK8.UI.Editor.Animations
         private List<Type> _propertiesTypes;
         private int _selectedTypeOption;
         private string _selectedStateName;
+        private SerializedProperty _ignoreTimeScale;
         private SerializedProperty _fullyComplate;
         private SerializedProperty _defaultState;
         private SerializedProperty _transitions;
@@ -25,6 +26,7 @@ namespace TarasK8.UI.Editor.Animations
         private void OnEnable()
         {
             _target = target as StateMachine;
+            _ignoreTimeScale = serializedObject.FindProperty("_ignoreTimeScale");
             _fullyComplate = serializedObject.FindProperty("_fullyComplateTransition");
             _defaultState = serializedObject.FindProperty("_defaultState");
             _transitions = serializedObject.FindProperty("_transitions");
@@ -62,6 +64,7 @@ namespace TarasK8.UI.Editor.Animations
         private void DrawOptions()
         {
             EditorGUILayout.LabelField("Options", EditorStyles.boldLabel);
+            EditorGUILayout.PropertyField(_ignoreTimeScale);
             EditorGUILayout.PropertyField(_fullyComplate);
             EditorGUILayout.PropertyField(_defaultState);
         }
