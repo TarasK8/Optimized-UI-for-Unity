@@ -10,14 +10,14 @@ namespace TarasK8.UI
     {
         [SerializeField, HideInInspector] private RectTransform _rectTransform;
         
-        [SerializeField] private BarSegment _bar;
+        [SerializeField] private BarSegment _fillBar;
         [SerializeField] private Direction _direction;
         [SerializeField, Range(0f, 1f)] private float _center = 0.5f;
         
         [SerializeField] private ValueMode _minValueMode = ValueMode.Custom;
         [SerializeField] private ValueMode _maxValueMode = ValueMode.Custom;
 
-        private RectTransform RectTransform
+        public RectTransform RectTransform
         {
             get
             {
@@ -27,9 +27,27 @@ namespace TarasK8.UI
             }
         }
 
-        public override float MinValue => GetValueByMode(_minValueMode, base.MinValue);
-        public override float MaxValue => GetValueByMode(_maxValueMode, base.MaxValue);
-        
+        public BarSegment FillBar
+        {
+            get => _fillBar;
+            set
+            {
+                _fillBar = value;
+                if(_fillBar != null)
+                    UpdateVisualProgress(Value);
+            }
+        }
+        public override float MinValue
+        {
+            get => GetValueByMode(_minValueMode, base.MinValue);
+            set => SetValueByMode(_minValueMode, value, (ctx) => base.MinValue = ctx);
+        }
+        public override float MaxValue
+        {
+            get => GetValueByMode(_maxValueMode, base.MaxValue);
+            set => SetValueByMode(_maxValueMode, value, (ctx) => base.MaxValue = ctx);
+        }
+
         public float Center
         {
             get => _center;
@@ -52,7 +70,7 @@ namespace TarasK8.UI
 #if UNITY_EDITOR
         private void Update()
         {
-            if(Application.isPlaying == false && _bar != null)
+            if(Application.isPlaying == false && _fillBar != null)
                 UpdateVisualProgress(Value);
         }
 #endif
@@ -74,25 +92,33 @@ namespace TarasK8.UI
 
         public void UpdateVisualProgress(float value)
         {
+#if UNITY_EDITOR
+            if (_fillBar == null)
+            {
+                Debug.LogException(new NullReferenceException("Fill Bar is null"), this);
+                return;
+            }
+#endif
+            
             var position = CalculatePosition(value);
 
             switch (_direction)
             {
                 case Direction.Right:
                 {
-                    _bar.SetPosition(0f, position);
+                    _fillBar.SetPosition(0f, position);
                     break;
                 }
                 case Direction.Left:
                 {
-                    _bar.SetPosition(-position + 1f, 1f);
+                    _fillBar.SetPosition(-position + 1f, 1f);
                     break;
                 }
                 case Direction.Center:
                 {
                     float left = CalculateLeftCenter(position);
                     float right = CalculateRightCenter(position);
-                    _bar.SetPosition(left, right);
+                    _fillBar.SetPosition(left, right);
                     break;
                 }
                 default:
@@ -112,14 +138,59 @@ namespace TarasK8.UI
             };
         }
 
+        private void SetValueByMode(ValueMode mode, float value, Action<float> customValue)
+        {
+            switch (mode)
+            {
+                case ValueMode.Custom:
+                {
+                    customValue.Invoke(value);
+                    base.MaxValue = value;
+                    UpdateValue();
+                    break;
+                }
+                case ValueMode.Width:
+                {
+                    var size = new Vector2(value, RectTransform.sizeDelta.y);
+                    RectTransform.sizeDelta = size;
+                    break;
+                }
+                case ValueMode.Height:
+                {
+                    var size = new Vector2(RectTransform.sizeDelta.x, value);
+                    RectTransform.sizeDelta = size;
+                    break;
+                }
+                case ValueMode.HeightOrWidth:
+                {
+                    SetHeightOrWidthOption(value);
+                    break;
+                }
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(mode), mode, null);
+            }
+        }
+
         private float GetHeightOrWidthOption()
         {
-            return _bar.axis switch
+            return _fillBar.axis switch
             {
                 BarSegment.Axis.Horizontal => RectTransform.rect.width,
                 BarSegment.Axis.Vertical => RectTransform.rect.height,
                 _ => throw new ArgumentOutOfRangeException()
             };
+        }
+
+        private void SetHeightOrWidthOption(float value)
+        {
+            var size = _fillBar.axis switch
+            {
+                BarSegment.Axis.Horizontal => new Vector2(value, RectTransform.sizeDelta.y),
+                BarSegment.Axis.Vertical => new Vector2(RectTransform.sizeDelta.x, value),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+            RectTransform.sizeDelta = size;
+            base.UpdateValue();
         }
 
         protected override bool ShouldFilterSameValues()
