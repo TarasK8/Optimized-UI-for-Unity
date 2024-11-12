@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -7,39 +8,54 @@ namespace TarasK8.UI.Animations.Tweening
 {
     public class TweenManager : MonoBehaviour
     {
-        [SerializeField] private bool _ignoreTimeScale = true;
-
         private static TweenManager _instance;
         private List<Tween> _activeTweens = new List<Tween>();
-
-        public static bool IgnoreTimeScale
-        {
-            get => GetOrCreateInstance()._ignoreTimeScale;
-            set => GetOrCreateInstance()._ignoreTimeScale = value;
-        }
+        private List<Tween> _activeTweensUnsaledTime = new List<Tween>();
+        private bool _enabledUnscaledTime = false;
 
         private void Awake()
         {
             _instance = GetOrCreateInstance();
         }
 
+        private IEnumerator Start()
+        {
+            // Fixes a bug when the elapsed animation time includes the game start time (if used unscaledTime)
+            yield return null;
+            _enabledUnscaledTime = true;
+        }
+
         private void Update()
         {
-            float delta = _ignoreTimeScale ? Time.unscaledDeltaTime : Time.timeScale;
+            // Debug.Log($"Delta: {Time.deltaTime}; Unscaled: {Time.unscaledDeltaTime}\n Time: {Time.time} Unscaled Time: {Time.unscaledTime}");
+            
+            UpdateTweens(_activeTweens, Time.deltaTime);
+            
+            if(!_enabledUnscaledTime) return;
+            UpdateTweens(_activeTweensUnsaledTime, Time.unscaledDeltaTime);
+            
+        }
 
-            _activeTweens.RemoveAll(TryRemove);
-            foreach (var tween in _activeTweens)
+        private void UpdateTweens(List<Tween> tweens, float delta)
+        {
+            tweens.RemoveAll(TryRemove);
+            foreach (var tween in tweens)
             {
                 tween.Update(delta);
             }
         }
 
-        public static List<Tween> GetActiveTweens()
+        public static IReadOnlyCollection<Tween> GetActiveTweens()
         {
             return GetOrCreateInstance()._activeTweens;
         }
+        
+        public static IReadOnlyCollection<Tween> GetActiveTweensUnscaledTime()
+        {
+            return GetOrCreateInstance()._activeTweensUnsaledTime;
+        }
 
-        public static void StartTween(Tween tween, bool instantly = false)
+        public static void StartTween(Tween tween, bool instantly = false, bool ignoreTimeScale = true)
         {
             bool isZeroDuration = Mathf.Approximately(tween.Duration, 0f) && Mathf.Approximately(tween.Delay, 0f);
             if(instantly || isZeroDuration)
@@ -50,7 +66,7 @@ namespace TarasK8.UI.Animations.Tweening
             }
 
             var tweenManager = GetOrCreateInstance();
-            var activeTweens = tweenManager._activeTweens;
+            var activeTweens = ignoreTimeScale ? tweenManager._activeTweensUnsaledTime : tweenManager._activeTweens;
 
             if (activeTweens.Contains(tween))
                 return;

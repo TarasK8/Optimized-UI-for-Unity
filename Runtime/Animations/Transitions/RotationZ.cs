@@ -25,7 +25,7 @@ namespace TarasK8.UI.Animations.Transitions
         {
             float lerp = _easing.Evaluate(t);
             Vector3 currentRotation = _targetTransform.rotation.eulerAngles;
-            float z = Mathf.LerpAngle(_current, _data.Rotation, lerp);
+            float z = LerpAngleUnclamped(_current, _data.Rotation, lerp);
             _targetTransform.rotation = Quaternion.Euler(currentRotation.x, currentRotation.y, z);
         }
 
@@ -34,6 +34,14 @@ namespace TarasK8.UI.Animations.Transitions
         {
             [field: SerializeField] public string Name { get; set; }
             [SerializeField] public float Rotation = 0f;
+        }
+        
+        public static float LerpAngleUnclamped(float a, float b, float t)
+        {
+            float num = Mathf.Repeat(b - a, 360f);
+            if (num > 180.0f)
+                num -= 360f;
+            return a + num * t;
         }
     }
 }

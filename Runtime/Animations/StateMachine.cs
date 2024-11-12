@@ -9,6 +9,7 @@ namespace TarasK8.UI.Animations
     [AddComponentMenu("Optimized UI/Animation/State Machine")]
     public class StateMachine : MonoBehaviour
     {
+        [SerializeField] private bool _ignoreTimeScale = true;
         [SerializeField] private bool _fullyComplateTransition = false;
         [SerializeField, StateSelector(hasNone:true)] private int _defaultState = -1;
         [SerializeReference] private List<Transition> _transitions = new();
@@ -25,37 +26,24 @@ namespace TarasK8.UI.Animations
 
         public void SetState(int stateIndex)
         {
-            if (CurrentState == stateIndex)
-                return;
-
-            CurrentState = stateIndex;
-
-            foreach (var transition in _transitions)
-            {
-                transition.SetState(stateIndex);
-                if (transition.IsStarted && _fullyComplateTransition)
-                    transition.Process(1f);
-                transition.Reset();
-                TweenManager.StartTween(transition);
-            }
+            SetState(stateIndex, instantly: false);
         }
 
         public void SetState(string stateName)
         {
-            SetState(StateNameToIndex(stateName));
+            int index = StateNameToIndex(stateName);
+            SetState(index, instantly: false);
         }
 
         public void SetStateInstantly(int stateIndex)
         {
-            foreach (var transition in _transitions)
-            {
-                transition.SetState(stateIndex);
-                if (transition.IsStarted && _fullyComplateTransition)
-                    transition.Process(1f);
-                transition.Reset();
-                transition.Start();
-                transition.Complete();
-            }
+            SetState(stateIndex, instantly: true);
+        }
+        
+        public void SetStateInstantly(string stateName)
+        {
+            int index = StateNameToIndex(stateName);
+            SetState(index, instantly: true);
         }
 
         public void AddState(string stateName)
@@ -129,6 +117,23 @@ namespace TarasK8.UI.Animations
             else
             {
                 throw new ArgumentException($"State '{stateName}' not found.");
+            }
+        }
+
+        private void SetState(int stateIndex, bool instantly)
+        {
+            if (CurrentState == stateIndex && instantly == false)
+                return;
+
+            CurrentState = stateIndex;
+
+            foreach (var transition in _transitions)
+            {
+                transition.SetState(stateIndex);
+                if (transition.IsStarted && _fullyComplateTransition)
+                    transition.Process(1f);
+                transition.Reset();
+                TweenManager.StartTween(transition, instantly: instantly, ignoreTimeScale: _ignoreTimeScale);
             }
         }
     }

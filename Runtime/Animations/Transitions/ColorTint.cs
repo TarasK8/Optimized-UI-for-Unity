@@ -1,4 +1,3 @@
-using TarasK8.UI.Animations.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -18,7 +17,7 @@ namespace TarasK8.UI.Animations.Transitions
 
         public override void Start(Data data)
         {
-            _targetGraphic.CrossFadeColor(data.Color, Duration, TweenManager.IgnoreTimeScale, _useAlpha);
+            _targetGraphic.CrossFadeColor(data.Color, Duration, true, _useAlpha);
         }
 
         public override void Process(float t) {}
