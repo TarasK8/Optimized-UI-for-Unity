@@ -24,7 +24,7 @@ namespace TarasK8.UI.Editor
 
             _ignoreLenght = serializedObject.FindProperty("_ignoreLenght");
             _reversed = serializedObject.FindProperty("_reversed");
-            _bars = serializedObject.FindProperty("_bars");
+            _bars = serializedObject.FindProperty("_fillBars");
             
             _minValue = serializedObject.FindProperty("_minValue");
             _maxValue = serializedObject.FindProperty("_maxValue");

@@ -24,7 +24,7 @@ namespace TarasK8.UI.Editor
         {
             _target = (ProgressBar)serializedObject.targetObject;
 
-            _bar = serializedObject.FindProperty("_bar");
+            _bar = serializedObject.FindProperty("_fillBar");
             _direction = serializedObject.FindProperty("_direction");
             _center = serializedObject.FindProperty("_center");
 

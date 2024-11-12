@@ -18,9 +18,26 @@ namespace TarasK8.UI
         }
         
         public float Length => MaxValue - MinValue;
-        
-        public virtual float MinValue => _minValue;
-        public virtual float MaxValue => _maxValue;
+
+        public virtual float MinValue
+        {
+            get => _minValue;
+            set
+            {
+                _minValue = value;
+                SetValue(Value);
+            }
+        }
+
+        public virtual float MaxValue
+        {
+            get => _maxValue;
+            set
+            {
+                _maxValue = value;
+                UpdateValue();
+            }
+        }
 
         private void OnValidate()
         {
@@ -34,7 +51,12 @@ namespace TarasK8.UI
         {
             Value += value;
         }
-        
+
+        public void UpdateValue()
+        {
+            SetValue(Value);
+        }
+
         public float CalculatePosition(float value)
         {
             return Mathf.InverseLerp(MinValue, MaxValue, value);
