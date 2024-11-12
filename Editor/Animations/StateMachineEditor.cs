@@ -10,11 +10,10 @@ namespace TarasK8.UI.Editor.Animations
 {
     [CustomEditor(typeof(StateMachine))]
     [CanEditMultipleObjects]
-
     public class StateMachineEditor : UnityEditor.Editor
     {
-        private string[] _propertiesTypesOptions;
-        private List<Type> _propertiesTypes;
+        private static string[] _propertiesTypesOptions;
+        private static List<Type> _propertiesTypes;
         private int _selectedTypeOption;
         private string _selectedStateName;
         private SerializedProperty _ignoreTimeScale;
@@ -30,18 +29,17 @@ namespace TarasK8.UI.Editor.Animations
             _fullyComplate = serializedObject.FindProperty("_fullyComplateTransition");
             _defaultState = serializedObject.FindProperty("_defaultState");
             _transitions = serializedObject.FindProperty("_transitions");
-            _propertiesTypes = GetTransitionTypes();
-            _propertiesTypesOptions = new string[_propertiesTypes.Count];
-            for (int i = 0; i < _propertiesTypes.Count; i++)
+
+            // Initialize _propertiesTypes and _propertiesTypesOptions if not already done
+            if (_propertiesTypes == null)
             {
-                TransitionMenuNameAttribute attribute = (TransitionMenuNameAttribute)Attribute.GetCustomAttribute(_propertiesTypes[i], typeof(TransitionMenuNameAttribute));
-                if (attribute != null)
+                Debug.Log("Init properties types option");
+                _propertiesTypes = GetTransitionTypes();
+                _propertiesTypesOptions = new string[_propertiesTypes.Count];
+                for (int i = 0; i < _propertiesTypes.Count; i++)
                 {
-                    _propertiesTypesOptions[i] = attribute.MenuName;
-                }
-                else
-                {
-                    _propertiesTypesOptions[i] = _propertiesTypes[i].Name;
+                    TransitionMenuNameAttribute attribute = (TransitionMenuNameAttribute)Attribute.GetCustomAttribute(_propertiesTypes[i], typeof(TransitionMenuNameAttribute));
+                    _propertiesTypesOptions[i] = attribute?.MenuName ?? _propertiesTypes[i].Name;
                 }
             }
         }
@@ -164,17 +162,14 @@ namespace TarasK8.UI.Editor.Animations
         private List<Type> GetTransitionTypes()
         {
             Type baseType = typeof(Transition);
-
             Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
             List<Type> derivedTypes = new List<Type>();
 
             foreach (var assembly in assemblies)
             {
                 Type[] types = assembly.GetTypes();
-                //Debug.Log($"{assembly.Location}; Types: {types.Length}");
-                derivedTypes.AddRange(types.Where(t => t.IsSubclassOf(baseType) && t.IsAbstract == false));
+                derivedTypes.AddRange(types.Where(t => t.IsSubclassOf(baseType) && !t.IsAbstract));
             }
-
             return derivedTypes;
         }
 
