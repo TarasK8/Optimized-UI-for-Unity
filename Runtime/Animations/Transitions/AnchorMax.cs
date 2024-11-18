@@ -5,7 +5,7 @@ namespace TarasK8.UI.Animations.Transitions
 {
     [Serializable]
     [TransitionMenuName("Rect Transform/Anchor Max")]
-    public class AnchorMax : Transition<AnchorMax.Data>
+    public class AnchorMax : AnimatedProperty<AnchorMax.Data>
     {
         [field: SerializeField] public override float Delay { get; protected set; }
         [field: SerializeField] public override float Duration { get; protected set; }

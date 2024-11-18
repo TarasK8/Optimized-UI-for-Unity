@@ -5,7 +5,7 @@ namespace TarasK8.UI.Animations.Transitions
 {
     [Serializable]
     [TransitionMenuName("Transform/Scale")]
-    public class Scale : Transition<Scale.Data>
+    public class Scale : AnimatedProperty<Scale.Data>
     {
         // You can add the [field: SerializeField] attribute to avoid adding additional fields
         [field: SerializeField] public override float Duration { get; protected set; }

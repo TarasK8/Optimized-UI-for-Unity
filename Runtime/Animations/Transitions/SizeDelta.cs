@@ -5,7 +5,7 @@ namespace TarasK8.UI.Animations.Transitions
 {
     [Serializable]
     [TransitionMenuName("Rect Transform/Size Delta")]
-    public class SizeDelta : Transition<SizeDelta.Data>
+    public class SizeDelta : AnimatedProperty<SizeDelta.Data>
     {
         [field: SerializeField] public override float Delay { get; protected set; }
         [field: SerializeField] public override float Duration { get; protected set; }

@@ -5,7 +5,7 @@ namespace TarasK8.UI.Animations.Transitions
 {
     [Serializable]
     [TransitionMenuName("Rect Transform/Pivot")]
-    public class Pivot : Transition<Pivot.Data>
+    public class Pivot : AnimatedProperty<Pivot.Data>
     {
         [field: SerializeField] public override float Delay { get; protected set; }
         [field: SerializeField] public override float Duration { get; protected set; }

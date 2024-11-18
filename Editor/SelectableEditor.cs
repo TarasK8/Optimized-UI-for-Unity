@@ -26,7 +26,7 @@ namespace TarasK8.UI.Editor
         private SerializedProperty _stateMachine;
         private SerializedProperty _normal, _hover, _pressed, _selected, _disabled;
 
-        private GUIContent _transitionTypeContent = new GUIContent("Transition");
+        private GUIContent _transitionTypeContent = new GUIContent("AnimatedProperty");
         private AnimBool _showTransitionsFade;
 
         public string[] _propertyPathToExcludeForChildClasses;

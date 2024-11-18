@@ -5,7 +5,7 @@ namespace TarasK8.UI.Animations.Transitions
 {
     [Serializable]
     [TransitionMenuName("Transform/Scale All")]
-    public class ScaleAll : Transition<ScaleAll.Data>
+    public class ScaleAll : AnimatedProperty<ScaleAll.Data>
     {
         [field: SerializeField] public override float Duration { get; protected set; }
         [field: SerializeField] public override float Delay { get; protected set; }

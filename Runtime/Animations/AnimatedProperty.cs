@@ -7,7 +7,7 @@ using UnityEngine;
 namespace TarasK8.UI.Animations
 {
     [Serializable]
-    public abstract class Transition : Tween
+    public abstract class AnimatedProperty : Tween
     {
         public const string STATES_FIELD_NAME = "_states";
 
@@ -27,7 +27,7 @@ namespace TarasK8.UI.Animations
     }
 
     [Serializable]
-    public abstract class Transition<T> : Transition
+    public abstract class AnimatedProperty<T> : AnimatedProperty
         where T : IAnimationData, new()
     {
         [SerializeReference] private List<T> _states = new(2);
