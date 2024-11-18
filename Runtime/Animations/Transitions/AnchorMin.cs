@@ -5,7 +5,7 @@ namespace TarasK8.UI.Animations.Transitions
 {
     [Serializable]
     [TransitionMenuName("Rect Transform/Anchor Min")]
-    public class AnchorMin : Transition<AnchorMin.Data>
+    public class AnchorMin : AnimatedProperty<AnchorMin.Data>
     {
         [field: SerializeField] public override float Delay { get; protected set; }
         [field: SerializeField] public override float Duration { get; protected set; }

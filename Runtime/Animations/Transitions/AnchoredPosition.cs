@@ -5,7 +5,7 @@ namespace TarasK8.UI.Animations.Transitions
 {
     [Serializable]
     [TransitionMenuName("Rect Transform/Anchored Position")]
-    public class AnchoredPosition : Transition<AnchoredPosition.Data>
+    public class AnchoredPosition : AnimatedProperty<AnchoredPosition.Data>
     {
         [field: SerializeField] public override float Delay { get; protected set; }
         [field: SerializeField] public override float Duration { get; protected set; }

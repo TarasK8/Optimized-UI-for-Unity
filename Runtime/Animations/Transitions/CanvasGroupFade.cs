@@ -5,7 +5,7 @@ namespace TarasK8.UI.Animations.Transitions
 {
     [System.Serializable]
     [TransitionMenuName("Canvas Group/Fade")]
-    public class CanvasGroupFade : Transition<CanvasGroupFade.Data>
+    public class CanvasGroupFade : AnimatedProperty<CanvasGroupFade.Data>
     {
         [SerializeField] private float _duration = 0.2f;
         [SerializeField] private float _delay = 0f;

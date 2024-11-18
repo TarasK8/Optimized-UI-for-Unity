@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TarasK8.UI.Animations.Tweening;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace TarasK8.UI.Animations
 {
@@ -12,7 +13,7 @@ namespace TarasK8.UI.Animations
         [SerializeField] private bool _ignoreTimeScale = true;
         [SerializeField] private bool _fullyComplateTransition = false;
         [SerializeField, StateSelector(hasNone:true)] private int _defaultState = -1;
-        [SerializeReference] private List<Transition> _transitions = new();
+        [SerializeReference] private List<AnimatedProperty> _animatedProperties = new();
 
         public int CurrentState { get; private set; } = -1;
 
@@ -53,13 +54,13 @@ namespace TarasK8.UI.Animations
                 Debug.LogError($"Name '{stateName}' already exists!");
                 return;
             }
-            foreach (var transition in _transitions)
+            foreach (var transition in _animatedProperties)
                 transition.AddState(stateName);
         }
 
         public void RemoveState(int index)
         {
-            foreach (var transition in _transitions)
+            foreach (var transition in _animatedProperties)
                 transition.RemoveState(index);
         }
 
@@ -70,34 +71,34 @@ namespace TarasK8.UI.Animations
                 Debug.LogError($"Name '{newName}' already exists!");
                 return;
             }
-            foreach (var transition in _transitions)
+            foreach (var transition in _animatedProperties)
                 transition.RenameState(index, newName);
         }
 
         public void AddTransition(Type type)
         {
-            if (type.IsSubclassOf(typeof(Transition)) == false && type.IsAbstract == false) return;
+            if (type.IsSubclassOf(typeof(AnimatedProperty)) == false && type.IsAbstract == false) return;
 
-            Transition transition = (Transition)Activator.CreateInstance(type);
-            if (_transitions.Count > 0)
+            AnimatedProperty animatedProperty = (AnimatedProperty)Activator.CreateInstance(type);
+            if (_animatedProperties.Count > 0)
             {
-                foreach (var state in _transitions[0].GetStates())
+                foreach (var state in _animatedProperties[0].GetStates())
                 {
-                    transition.AddState(state.Name);
+                    animatedProperty.AddState(state.Name);
                 }
             }
-            _transitions.Add(transition);
+            _animatedProperties.Add(animatedProperty);
         }
 
         public void RemoveTransition(int index)
         {
-            _transitions.RemoveAt(index);
+            _animatedProperties.RemoveAt(index);
         }
 
         public string[] GetAllStateNames()
         {
-            if (_transitions.Count > 0)
-                return _transitions[0].GetAllStateNames();
+            if (_animatedProperties.Count > 0)
+                return _animatedProperties[0].GetAllStateNames();
             else
                 return new string[0];
         }
@@ -110,7 +111,7 @@ namespace TarasK8.UI.Animations
         
         public int StateNameToIndex(string stateName)
         {
-            if(_transitions[0].TryFindState(stateName, out int stateIndex))
+            if(_animatedProperties[0].TryFindState(stateName, out int stateIndex))
             {
                 return stateIndex;
             }
@@ -127,7 +128,7 @@ namespace TarasK8.UI.Animations
 
             CurrentState = stateIndex;
 
-            foreach (var transition in _transitions)
+            foreach (var transition in _animatedProperties)
             {
                 transition.SetState(stateIndex);
                 if (transition.IsStarted && _fullyComplateTransition)

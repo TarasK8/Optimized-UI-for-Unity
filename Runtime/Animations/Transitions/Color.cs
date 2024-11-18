@@ -5,7 +5,7 @@ namespace TarasK8.UI.Animations.Transitions
 {
     [System.Serializable]
     [TransitionMenuName("Image/Color")]
-    public class Color : Transition<Color.Data>
+    public class Color : AnimatedProperty<Color.Data>
     {
         [SerializeField] private float _duration = 0.2f;
         [SerializeField] private float _delay = 0f;

@@ -5,7 +5,7 @@ namespace TarasK8.UI.Animations.Transitions
 {
     [Serializable]
     [TransitionMenuName("Transform/Rotation Z")]
-    public class RotationZ : Transition<RotationZ.Data>
+    public class RotationZ : AnimatedProperty<RotationZ.Data>
     {
         [field: SerializeField] public override float Duration { get; protected set; }
         [field: SerializeField] public override float Delay { get; protected set; }

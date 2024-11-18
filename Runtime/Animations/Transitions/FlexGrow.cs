@@ -6,7 +6,7 @@ namespace TarasK8.UI.Animations.Transitions
 {
     [Serializable]
     [TransitionMenuName("Flex/Grow")]
-    public class FlexGrow : Transition<FlexGrow.Data>
+    public class FlexGrow : AnimatedProperty<FlexGrow.Data>
     {
         [field: SerializeField] public override float Duration { get; protected set; }
         [field: SerializeField] public override float Delay { get; protected set; }
