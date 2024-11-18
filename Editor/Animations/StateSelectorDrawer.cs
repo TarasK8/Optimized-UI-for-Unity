@@ -1,3 +1,4 @@
+using System;
 using System.Reflection;
 using TarasK8.UI.Animations;
 using UnityEditor;
@@ -21,7 +22,11 @@ namespace TarasK8.UI.Editor.Animations
             {
                 stateMachine = (StateMachine)property.serializedObject.targetObject;
             }
+            
             string[] states = stateMachine.GetAllStateNames();
+            
+            if(states == null)
+                states = Array.Empty<string>();
 
 
             if (property.propertyType == SerializedPropertyType.Integer)

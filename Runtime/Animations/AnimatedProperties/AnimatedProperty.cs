@@ -4,7 +4,7 @@ using System.Linq;
 using TarasK8.UI.Animations.Tweening;
 using UnityEngine;
 
-namespace TarasK8.UI.Animations
+namespace TarasK8.UI.Animations.AnimatedProperties
 {
     [Serializable]
     public abstract class AnimatedProperty : Tween
