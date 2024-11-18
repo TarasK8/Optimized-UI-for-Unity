@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using TarasK8.UI.Animations;
+using TarasK8.UI.Animations.AnimatedProperties;
 using UnityEditor;
 using UnityEngine;
 
@@ -19,7 +20,7 @@ namespace TarasK8.UI.Editor.Animations
         private SerializedProperty _ignoreTimeScale;
         private SerializedProperty _fullyComplate;
         private SerializedProperty _defaultState;
-        private SerializedProperty _transitions;
+        private SerializedProperty _aniamtedProperties;
         private StateMachine _target;
 
         private void OnEnable()
@@ -28,13 +29,13 @@ namespace TarasK8.UI.Editor.Animations
             _ignoreTimeScale = serializedObject.FindProperty("_ignoreTimeScale");
             _fullyComplate = serializedObject.FindProperty("_fullyComplateTransition");
             _defaultState = serializedObject.FindProperty("_defaultState");
-            _transitions = serializedObject.FindProperty("_animatedProperties");
+            _aniamtedProperties = serializedObject.FindProperty("_animatedProperties");
 
             // Initialize _propertiesTypes and _propertiesTypesOptions if not already done
             if (_propertiesTypes == null)
             {
                 Debug.Log("Init properties types option");
-                _propertiesTypes = GetTransitionTypes();
+                _propertiesTypes = GetAnimatedPropertyTypes();
                 _propertiesTypesOptions = new string[_propertiesTypes.Count];
                 for (int i = 0; i < _propertiesTypes.Count; i++)
                 {
@@ -50,8 +51,8 @@ namespace TarasK8.UI.Editor.Animations
 
             DrawOptions();
             EditorGUILayout.Space(15f);
-            DrawCreateTransitionButton();
-            DrawAllTransitions();
+            DrawAddAnimatedPropertyButton();
+            DrawAllAnimatedProperties();
             EditorGUILayout.Space(15f);
             DrawCreateStateButton();
             DrawAllStates();
@@ -67,26 +68,27 @@ namespace TarasK8.UI.Editor.Animations
             EditorGUILayout.PropertyField(_defaultState);
         }
 
-        private void DrawAllTransitions()
+        private void DrawAllAnimatedProperties()
         {
-            for (int i = 0; i < _transitions.arraySize; i++)
+            for (int i = 0; i < _aniamtedProperties.arraySize; i++)
             {
                 EditorGUILayout.BeginVertical("Box");
 
-                var transition = _transitions.GetArrayElementAtIndex(i);
+                var animatedProperty = _aniamtedProperties.GetArrayElementAtIndex(i);
                 EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField(transition.managedReferenceValue.GetType().Name, EditorStyles.boldLabel);
+                EditorGUILayout.LabelField(animatedProperty.managedReferenceValue.GetType().Name, EditorStyles.boldLabel);
                 if (GUILayout.Button("Delete"))
                 {
-                    _target.RemoveTransition(i);
+                    _target.RemoveAnimatedProperty(i);
                     EditorUtility.SetDirty(target);
                 }
                 EditorGUILayout.EndHorizontal();
 
-                var childs = transition.GetChildProperties();
+                var childs = animatedProperty.GetChildProperties();
                 foreach (var element in childs)
                 {
-                    if (element.name == AnimatedProperty.STATES_FIELD_NAME) continue;
+                    if (element.name == AnimatedProperty.STATES_FIELD_NAME)
+                        continue;
                     EditorGUILayout.PropertyField(element);
                 }
                 EditorGUILayout.EndVertical();
@@ -95,8 +97,8 @@ namespace TarasK8.UI.Editor.Animations
 
         private void DrawAllStates()
         {
-            if (_transitions.arraySize == 0) return;
-            var states = _transitions.GetArrayElementAtIndex(0).FindPropertyRelative(AnimatedProperty.STATES_FIELD_NAME);
+            if (_aniamtedProperties.arraySize == 0) return;
+            var states = _aniamtedProperties.GetArrayElementAtIndex(0).FindPropertyRelative(AnimatedProperty.STATES_FIELD_NAME);
 
             for (int j = 0; j < states.arraySize; j++)
             {
@@ -122,9 +124,9 @@ namespace TarasK8.UI.Editor.Animations
                 EditorUtility.SetDirty(target);
             }
             EditorGUILayout.EndHorizontal();
-            for (int i = 0; i < _transitions.arraySize; i++)
+            for (int i = 0; i < _aniamtedProperties.arraySize; i++)
             {
-                var drawState = _transitions.GetArrayElementAtIndex(i).FindPropertyRelative(AnimatedProperty.STATES_FIELD_NAME).GetArrayElementAtIndex(index);
+                var drawState = _aniamtedProperties.GetArrayElementAtIndex(i).FindPropertyRelative(AnimatedProperty.STATES_FIELD_NAME).GetArrayElementAtIndex(index);
                 foreach (var item in drawState.GetChildProperties())
                 {
                     if (item.name == IAnimationData.NAME_FIELD_NAME) continue;
@@ -134,14 +136,14 @@ namespace TarasK8.UI.Editor.Animations
             EditorGUILayout.EndVertical();
         }
 
-        private void DrawCreateTransitionButton()
+        private void DrawAddAnimatedPropertyButton()
         {
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField($"Animated Properties ({_transitions.arraySize})", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField($"Animated Properties ({_aniamtedProperties.arraySize})", EditorStyles.boldLabel);
             _selectedTypeOption = EditorGUILayout.Popup(_selectedTypeOption, _propertiesTypesOptions);
             if (GUILayout.Button("Add", GUILayout.Width(60f)))
             {
-                _target.AddTransition(_propertiesTypes[_selectedTypeOption]);
+                _target.AddAnimatedProperty(_propertiesTypes[_selectedTypeOption]);
             }
             EditorGUILayout.EndHorizontal();
         }
@@ -159,7 +161,7 @@ namespace TarasK8.UI.Editor.Animations
             EditorGUILayout.EndHorizontal();
         }
 
-        private List<Type> GetTransitionTypes()
+        private List<Type> GetAnimatedPropertyTypes()
         {
             Type baseType = typeof(AnimatedProperty);
             Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
@@ -175,8 +177,8 @@ namespace TarasK8.UI.Editor.Animations
 
         private int GetStatesCount()
         {
-            if (_transitions.arraySize == 0) return 0;
-            var states = _transitions.GetArrayElementAtIndex(0).FindPropertyRelative(AnimatedProperty.STATES_FIELD_NAME);
+            if (_aniamtedProperties.arraySize == 0) return 0;
+            var states = _aniamtedProperties.GetArrayElementAtIndex(0).FindPropertyRelative(AnimatedProperty.STATES_FIELD_NAME);
             return states.arraySize;
         }
     }

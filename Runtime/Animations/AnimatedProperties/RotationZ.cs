@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace TarasK8.UI.Animations.Transitions
+namespace TarasK8.UI.Animations.AnimatedProperties
 {
     [Serializable]
     [TransitionMenuName("Transform/Rotation Z")]

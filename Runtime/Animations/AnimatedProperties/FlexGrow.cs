@@ -1,37 +1,38 @@
 using System;
+using TarasK8.UI.Layout;
 using UnityEngine;
 
-namespace TarasK8.UI.Animations.Transitions
+namespace TarasK8.UI.Animations.AnimatedProperties
 {
     [Serializable]
-    [TransitionMenuName("Rect Transform/Anchor Min")]
-    public class AnchorMin : AnimatedProperty<AnchorMin.Data>
+    [TransitionMenuName("Flex/Grow")]
+    public class FlexGrow : AnimatedProperty<FlexGrow.Data>
     {
-        [field: SerializeField] public override float Delay { get; protected set; }
         [field: SerializeField] public override float Duration { get; protected set; }
+        [field: SerializeField] public override float Delay { get; protected set; }
         [SerializeField] public Easing _easing;
-        [SerializeField] private RectTransform _targetTransform;
+        [SerializeField] private FlexLayoutElement _targetElement;
 
-        private Vector2 _current;
         private Data _data;
+        private float _currentGrow;
 
         public override void Start(Data data)
         {
             _data = data;
-            _current = _targetTransform.anchorMin;
+            _currentGrow = _targetElement.Grow;
         }
 
         public override void Process(float t)
         {
             float lerp = _easing.Evaluate(t);
-            _targetTransform.anchorMin = Vector2.LerpUnclamped(_current, _data.AnchorMin, lerp);
+            _targetElement.Grow = Mathf.LerpUnclamped(_currentGrow, _data.Grow, lerp);
         }
 
         [Serializable]
         public class Data : IAnimationData
         {
             [field: SerializeField] public string Name { get; set; }
-            [SerializeField] public Vector2 AnchorMin = Vector3.one;
+            [SerializeField] public float Grow = 1f;
         }
     }
 }

@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TarasK8.UI.Animations.AnimatedProperties;
 using TarasK8.UI.Animations.Tweening;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace TarasK8.UI.Animations
 {
@@ -75,7 +75,7 @@ namespace TarasK8.UI.Animations
                 transition.RenameState(index, newName);
         }
 
-        public void AddTransition(Type type)
+        public void AddAnimatedProperty(Type type)
         {
             if (type.IsSubclassOf(typeof(AnimatedProperty)) == false && type.IsAbstract == false) return;
 
@@ -90,7 +90,7 @@ namespace TarasK8.UI.Animations
             _animatedProperties.Add(animatedProperty);
         }
 
-        public void RemoveTransition(int index)
+        public void RemoveAnimatedProperty(int index)
         {
             _animatedProperties.RemoveAt(index);
         }
@@ -98,7 +98,7 @@ namespace TarasK8.UI.Animations
         public string[] GetAllStateNames()
         {
             if (_animatedProperties.Count > 0)
-                return _animatedProperties[0].GetAllStateNames();
+                return _animatedProperties[0]?.GetAllStateNames();
             else
                 return new string[0];
         }
@@ -128,13 +128,13 @@ namespace TarasK8.UI.Animations
 
             CurrentState = stateIndex;
 
-            foreach (var transition in _animatedProperties)
+            foreach (var animatedProperty in _animatedProperties)
             {
-                transition.SetState(stateIndex);
-                if (transition.IsStarted && _fullyComplateTransition)
-                    transition.Process(1f);
-                transition.Reset();
-                TweenManager.StartTween(transition, instantly: instantly, ignoreTimeScale: _ignoreTimeScale);
+                animatedProperty.SetState(stateIndex);
+                if (animatedProperty.IsStarted && _fullyComplateTransition)
+                    animatedProperty.Process(1f);
+                animatedProperty.Reset();
+                TweenManager.StartTween(animatedProperty, instantly: instantly, ignoreTimeScale: _ignoreTimeScale);
             }
         }
     }
