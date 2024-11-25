@@ -9,7 +9,7 @@ namespace TarasK8.UI.Editor.Utils
         public static readonly GUILayoutOption AddButtonHeight = GUILayout.Height(24f);
         
         public static readonly GUILayoutOption RemoveButtonWidth = GUILayout.Width(20f);
-        public const string RemoveButtonText = "X";
+        public static readonly GUIContent RemoveButtonContent = new GUIContent("X", "Remove");
         
         public static bool DrawAddButton(string label)
         {
@@ -26,7 +26,7 @@ namespace TarasK8.UI.Editor.Utils
 
         public static bool DrawRemoveButton()
         {
-            return GUILayout.Button(RemoveButtonText, RemoveButtonWidth);
+            return GUILayout.Button(RemoveButtonContent, RemoveButtonWidth);
         }
     }
 }

@@ -129,11 +129,11 @@ namespace TarasK8.UI.Editor.Animations
             }
             return derivedTypes;
         }
-
+        /*
         private void DrawCreateStateButton()
         {
             EditorGUILayout.BeginHorizontal();
-            
+
             EditorGUILayout.LabelField($"States ({_target.States.Count})", EditorStyles.boldLabel);
             _selectedStateName = EditorGUILayout.TextField(_selectedStateName);
             if (GUILayout.Button("Add", GUILayout.Width(60f)))
@@ -141,11 +141,10 @@ namespace TarasK8.UI.Editor.Animations
                 _target.States.AddState(_selectedStateName);
                 EditorUtility.SetDirty(target);
             }
-            
+
             EditorGUILayout.EndHorizontal();
         }
-
-        /*
+        
         private void DrawAllStates()
         {
             if (_animatedProperties.arraySize == 0) return;

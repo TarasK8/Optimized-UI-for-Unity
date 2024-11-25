@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace TarasK8.UI.Editor
 {
-    public class StateListDrawer
+    public static class StateListDrawer
     {
         public const string NameFieldName = "<Name>k__BackingField";
         
@@ -33,7 +33,11 @@ namespace TarasK8.UI.Editor
             var nameProperty = property.FindPropertyRelative(NameFieldName);
             var dataListProperty = property.FindPropertyRelative("_dataList");
 
-            EditorGUILayout.PropertyField(nameProperty);
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.PropertyField(nameProperty, GUIContent.none);
+            bool remove = MyGuiUtility.DrawRemoveButton();
+            EditorGUILayout.EndHorizontal();
+            
             for (int i = 0; i < dataListProperty.arraySize; i++)
             {
                 var dataProperty = dataListProperty.GetArrayElementAtIndex(i);
@@ -45,15 +49,27 @@ namespace TarasK8.UI.Editor
             }
             
             EditorGUILayout.EndVertical();
+            
+            if(remove)
+                listProperty.DeleteArrayElementAtIndex(index);
         }
 
         private static void DrawAddButton(SerializedProperty property, StateList stateList)
         {
             if (MyGuiUtility.DrawAddButton("Add State"))
             {
-                stateList.AddState($"State {stateList.Count}");
+                var name = GetUniqueName(stateList);
+                stateList.TryAddState(name);
                 EditorUtility.SetDirty(property.serializedObject.targetObject);
             }
+        }
+
+        private static string GetUniqueName(StateList stateList)
+        {
+            int nameIndex = 0;
+            while (stateList.ContainsName($"State {nameIndex}"))
+                nameIndex++;
+            return $"State {nameIndex}";
         }
     }
 }

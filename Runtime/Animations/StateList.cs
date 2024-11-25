@@ -45,21 +45,21 @@ namespace TarasK8.UI.Animations
             return index;
         }
 
-        public void AddState(string name)
+        public bool TryAddState(string name)
         {
             State state = new State(name);
-            AddState(state);
+            return TryAddState(state);
         }
         
-        public void AddState(State state)
+        public bool TryAddState(State state)
         {
             if (ContainsName(state.Name))
             {
-                Debug.LogError($"State '{state.Name}' already exists.");
-                return;
+                //Debug.LogError($"State '{state.Name}' already exists.");
+                return false;
             }
-            Debug.Log($"Adding state '{state.Name}'");
             _states.Add(state);
+            return true;
         }
 
         public void Remove(int index)
