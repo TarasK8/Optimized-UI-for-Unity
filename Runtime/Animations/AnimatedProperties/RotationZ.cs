@@ -12,7 +12,7 @@ namespace TarasK8.UI.Animations.AnimatedProperties
         [SerializeField] private Easing _easing;
         [SerializeField] private RectTransform _targetTransform;
 
-        private Data _data;
+        [NonSerialized] private Data _data;
         private float _current;
 
         public override void Start(Data data)
@@ -29,19 +29,18 @@ namespace TarasK8.UI.Animations.AnimatedProperties
             _targetTransform.rotation = Quaternion.Euler(currentRotation.x, currentRotation.y, z);
         }
 
-        [Serializable]
-        public class Data : IAnimationData
-        {
-            [field: SerializeField] public string Name { get; set; }
-            [SerializeField] public float Rotation = 0f;
-        }
-        
         public static float LerpAngleUnclamped(float a, float b, float t)
         {
             float num = Mathf.Repeat(b - a, 360f);
             if (num > 180.0f)
                 num -= 360f;
             return a + num * t;
+        }
+
+        [Serializable]
+        public class Data : IAnimationData
+        {
+            [SerializeField] public float Rotation = 0f;
         }
     }
 }

@@ -12,8 +12,8 @@ namespace TarasK8.UI.Animations.AnimatedProperties
         [SerializeField] public Easing _easing;
         [SerializeField] private RectTransform _targetTransform;
 
+        [NonSerialized] private Data _data;
         private Vector2 _current;
-        private Data _data;
 
         public override void Start(Data data)
         {
@@ -30,7 +30,6 @@ namespace TarasK8.UI.Animations.AnimatedProperties
         [Serializable]
         public class Data : IAnimationData
         {
-            [field: SerializeField] public string Name { get; set; }
             [SerializeField] public Vector2 Position = Vector3.one;
         }
     }

@@ -31,7 +31,6 @@ namespace TarasK8.UI.Animations.AnimatedProperties
         [Serializable]
         public class Data : IAnimationData
         {
-            [field: SerializeField] public string Name { get; set; }
             [SerializeField] public float Grow = 1f;
         }
     }

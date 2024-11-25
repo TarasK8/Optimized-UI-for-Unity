@@ -26,7 +26,7 @@ namespace TarasK8.UI.Editor
         private SerializedProperty _stateMachine;
         private SerializedProperty _normal, _hover, _pressed, _selected, _disabled;
 
-        private GUIContent _transitionTypeContent = new GUIContent("AnimatedProperty");
+        private GUIContent _transitionTypeContent = new GUIContent("Transition");
         private AnimBool _showTransitionsFade;
 
         public string[] _propertyPathToExcludeForChildClasses;
@@ -77,7 +77,7 @@ namespace TarasK8.UI.Editor
                 EditorGUI.indentLevel++;
                 EditorGUILayout.PropertyField(_stateMachine);
                 StateMachine stateMachine = ((Selectable)target).GetStateMachine();
-                if(stateMachine is not null)
+                if(stateMachine != null)
                 {
                     string[] options = stateMachine.States.GetAllNames().ToArray();
                     StateField(_normal, options);
