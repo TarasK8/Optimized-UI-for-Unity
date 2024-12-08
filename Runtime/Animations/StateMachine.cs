@@ -60,8 +60,23 @@ namespace TarasK8.UI.Animations
             _animatedProperties.Add(animatedProperty);
         }
 
+        public void AddState(string stateName)
+        {
+            var state = new State(stateName);
+            foreach (var animatedProperty in _animatedProperties)
+            {
+                var data = animatedProperty.CreateNewAnimationData();
+                state.AddAnimationData(data);
+            }
+            _states.TryAddState(state);
+        }
+
         public void RemoveAnimatedProperty(int index)
         {
+            for (int i = 0; i < _states.Count; i++)
+            {
+                _states.RemoveAnimationData(i, index);
+            }
             _animatedProperties.RemoveAt(index);
         }
         

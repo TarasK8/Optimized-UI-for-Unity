@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using TarasK8.UI.Animations;
 using TarasK8.UI.Animations.AnimatedProperties;
+using TarasK8.UI.Editor.Utils;
 using UnityEditor;
 using UnityEngine;
 
@@ -53,12 +54,15 @@ namespace TarasK8.UI.Editor.Animations
 
             DrawOptions();
             EditorGUILayout.Space(15f);
-            DrawAddAnimatedPropertyButton();
+            
+            DrawLabel();
             DrawAllAnimatedProperties();
+            DrawAddPropertyButton();
             EditorGUILayout.Space(15f);
             //DrawCreateStateButton();
             //EditorGUILayout.PropertyField(_states);
             StateListDrawer.Draw(_states, _target.States);
+            DrawAddStateButton();
             
             //DrawAllStates();
 
@@ -67,7 +71,7 @@ namespace TarasK8.UI.Editor.Animations
 
         private void DrawOptions()
         {
-            EditorGUILayout.LabelField("Options", EditorStyles.boldLabel);
+            //EditorGUILayout.LabelField("Options", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(_ignoreTimeScale);
             EditorGUILayout.PropertyField(_fullyComplete);
             EditorGUILayout.PropertyField(_defaultState);
@@ -77,12 +81,12 @@ namespace TarasK8.UI.Editor.Animations
         {
             for (int i = 0; i < _animatedProperties.arraySize; i++)
             {
-                EditorGUILayout.BeginVertical("Box");
+                EditorGUILayout.BeginVertical(GUI.skin.box);
 
                 var animatedProperty = _animatedProperties.GetArrayElementAtIndex(i);
                 EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.LabelField(animatedProperty.managedReferenceValue.GetType().Name, EditorStyles.boldLabel);
-                if (GUILayout.Button("X", GUILayout.Width(20)))
+                if (MyGuiUtility.DrawRemoveButton())
                 {
                     _target.RemoveAnimatedProperty(i);
                     EditorUtility.SetDirty(target);
@@ -100,20 +104,42 @@ namespace TarasK8.UI.Editor.Animations
             }
         }
         
-        private void DrawAddAnimatedPropertyButton()
+        private void DrawLabel()
         {
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField($"Animated Properties ({_animatedProperties.arraySize})", EditorStyles.boldLabel);
+            /*
             _selectedTypeOption = EditorGUILayout.Popup(_selectedTypeOption, _propertiesTypesOptions);
             if (GUILayout.Button("Add", GUILayout.Width(60f)))
             {
                 var type = _propertiesTypes[_selectedTypeOption];
-                Debug.Assert(type != null);
                 AnimatedProperty animatedProperty = (AnimatedProperty)Activator.CreateInstance(type);
                 _target.AddAnimatedProperty(animatedProperty);
                 EditorUtility.SetDirty(target);
             }
+            */
             EditorGUILayout.EndHorizontal();
+        }
+
+        public void DrawAddPropertyButton()
+        {
+            if (MyGuiUtility.DrawAddButton("Add Animated Property"))
+            {
+                var type = _propertiesTypes[_selectedTypeOption];
+                AnimatedProperty animatedProperty = (AnimatedProperty)Activator.CreateInstance(type);
+                _target.AddAnimatedProperty(animatedProperty);
+                EditorUtility.SetDirty(target);
+            }
+        }
+
+        public void DrawAddStateButton()
+        {
+            if (MyGuiUtility.DrawAddButton("Add State"))
+            {
+                var name = StateListDrawer.GetUniqueName(_target.States);
+                _target.AddState(name);
+                EditorUtility.SetDirty(serializedObject.targetObject);
+            }
         }
 
         private List<Type> GetAnimatedPropertyTypes()

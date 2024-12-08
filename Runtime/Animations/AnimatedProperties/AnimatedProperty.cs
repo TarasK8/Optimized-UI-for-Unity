@@ -44,10 +44,5 @@ namespace TarasK8.UI.Animations.AnimatedProperties
     }
 
     public interface IAnimationData
-    {
-        /*
-        public const string NAME_FIELD_NAME = "<Name>k__BackingField";
-        public string Name { get; set; }
-        */
-    }
+    { }
 }

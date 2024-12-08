@@ -9,18 +9,23 @@ namespace TarasK8.UI.Animations
     [Serializable]
     public class State
     {
-        public const string NameFieldName = "<Name>k__BackingField";
         [field: SerializeField] public string Name { get; private set; }
         [SerializeReference] private List<IAnimationData> _dataList;
 
         public State(string name)
         {
+            _dataList = new List<IAnimationData>();
             Rename(name);
         }
 
         public void AddAnimationData(IAnimationData animationData)
         {
             _dataList.Add(animationData);
+        }
+
+        public void RemoveAnimationData(int index)
+        {
+            _dataList.RemoveAt(index);
         }
 
         public IAnimationData GetAnimationData(int index)

@@ -21,8 +21,14 @@ namespace TarasK8.UI.Editor
             {
                 DrawState(listProperty, i);
             }
+        }
 
-            DrawAddButton(property, stateList);
+        public static string GetUniqueName(StateList stateList)
+        {
+            int nameIndex = 0;
+            while (stateList.ContainsName($"State {nameIndex}"))
+                nameIndex++;
+            return $"State {nameIndex}";
         }
 
         private static void DrawState(SerializedProperty listProperty, int index)
@@ -52,24 +58,6 @@ namespace TarasK8.UI.Editor
             
             if(remove)
                 listProperty.DeleteArrayElementAtIndex(index);
-        }
-
-        private static void DrawAddButton(SerializedProperty property, StateList stateList)
-        {
-            if (MyGuiUtility.DrawAddButton("Add State"))
-            {
-                var name = GetUniqueName(stateList);
-                stateList.TryAddState(name);
-                EditorUtility.SetDirty(property.serializedObject.targetObject);
-            }
-        }
-
-        private static string GetUniqueName(StateList stateList)
-        {
-            int nameIndex = 0;
-            while (stateList.ContainsName($"State {nameIndex}"))
-                nameIndex++;
-            return $"State {nameIndex}";
         }
     }
 }

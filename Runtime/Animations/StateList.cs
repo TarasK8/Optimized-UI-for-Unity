@@ -25,6 +25,11 @@ namespace TarasK8.UI.Animations
             _states[stateIndex].AddAnimationData(animationData);
         }
 
+        public void RemoveAnimationData(int stateIndex, int animationDataIndex)
+        {
+            _states[stateIndex].RemoveAnimationData(animationDataIndex);
+        }
+
         public bool ContainsName(string stateName)
         {
             return _states.Any(s => s.Name == stateName);
