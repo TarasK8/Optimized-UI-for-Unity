@@ -30,7 +30,6 @@ namespace TarasK8.UI.Animations.AnimatedProperties
         [Serializable]
         public class Data : IAnimationData
         {
-            [field: SerializeField] public string Name { get; set; }
             [SerializeField] public Vector2 AnchorMax = Vector3.one;
         }
     }

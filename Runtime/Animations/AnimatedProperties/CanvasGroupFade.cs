@@ -1,5 +1,5 @@
+using System;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace TarasK8.UI.Animations.AnimatedProperties
 {
@@ -12,7 +12,7 @@ namespace TarasK8.UI.Animations.AnimatedProperties
         [SerializeField] public Easing _easing;
         [SerializeField] private CanvasGroup _targetGroup;
 
-        private Data _data;
+        [NonSerialized] private Data _data;
         private float _currentAlpha;
 
         public override float Delay { get => _delay; protected set => _delay = value; }
@@ -33,7 +33,6 @@ namespace TarasK8.UI.Animations.AnimatedProperties
         [System.Serializable]
         public class Data : IAnimationData
         {
-            [field: SerializeField] public string Name { get; set; }
             [SerializeField, Range(0f, 1f)] public float Alpha = 0f;
         }
     }

@@ -25,7 +25,6 @@ namespace TarasK8.UI.Animations.AnimatedProperties
         [System.Serializable]
         public class Data : IAnimationData
         {
-            [field: SerializeField] public string Name { get; set; }
             [SerializeField] public UnityEngine.Color Color = UnityEngine.Color.white;
         }
     }

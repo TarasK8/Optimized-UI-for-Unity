@@ -12,7 +12,7 @@ namespace TarasK8.UI.Animations.AnimatedProperties
         [SerializeField] private Easing _easing;
         [SerializeField] private Transform _targetTransform;
 
-        private Data _data;
+        [NonSerialized] private Data _data;
         private float _current;
 
         public override void Start(Data data)
@@ -31,8 +31,7 @@ namespace TarasK8.UI.Animations.AnimatedProperties
         [Serializable]
         public class Data : IAnimationData
         {
-            [field: SerializeField] public string Name { get; set; }
-            [SerializeField] public float Scale = 1f;
+            public float Scale = 1f;
         }
     }
 }
