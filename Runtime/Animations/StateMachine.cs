@@ -94,7 +94,7 @@ namespace TarasK8.UI.Animations
                 if (animatedProperty.IsStarted && _fullyCompleteTransition)
                     animatedProperty.Process(1f);
                 animatedProperty.Reset();
-                TweenManager.StartTween(animatedProperty, instantly: instantly, ignoreTimeScale: _ignoreTimeScale);
+                TweenManager.StartTween(animatedProperty, instantly, _ignoreTimeScale);
             }
         }
     }
