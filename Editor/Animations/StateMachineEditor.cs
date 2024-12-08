@@ -6,6 +6,7 @@ using TarasK8.UI.Animations;
 using TarasK8.UI.Animations.AnimatedProperties;
 using TarasK8.UI.Editor.Utils;
 using UnityEditor;
+using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 
 namespace TarasK8.UI.Editor.Animations
@@ -16,6 +17,7 @@ namespace TarasK8.UI.Editor.Animations
     {
         private static string[] _propertiesTypesOptions;
         private static List<Type> _propertiesTypes;
+        private static AnimatedPropertiesDropdown _addPropertyDropdown;
         private int _selectedTypeOption;
         private string _selectedStateName;
         private SerializedProperty _ignoreTimeScale;
@@ -43,8 +45,11 @@ namespace TarasK8.UI.Editor.Animations
                 for (int i = 0; i < _propertiesTypes.Count; i++)
                 {
                     TransitionMenuNameAttribute attribute = (TransitionMenuNameAttribute)Attribute.GetCustomAttribute(_propertiesTypes[i], typeof(TransitionMenuNameAttribute));
-                    _propertiesTypesOptions[i] = attribute?.MenuName ?? _propertiesTypes[i].Name;
+                    string option = attribute?.MenuName ?? _propertiesTypes[i].Name;
+                    _propertiesTypesOptions[i] = option;
                 }
+                var state = new AdvancedDropdownState();
+                _addPropertyDropdown = new AnimatedPropertiesDropdown(state, _propertiesTypesOptions);
             }
         }
 
@@ -53,17 +58,17 @@ namespace TarasK8.UI.Editor.Animations
             serializedObject.Update();
 
             DrawOptions();
+            
             EditorGUILayout.Space(15f);
             
             DrawLabel();
-            _selectedTypeOption = EditorGUILayout.Popup(_selectedTypeOption, _propertiesTypesOptions);
             DrawAllAnimatedProperties();
             DrawAddPropertyButton();
+            
             EditorGUILayout.Space(15f);
+            
             StateListDrawer.Draw(_states, _target.States);
             DrawAddStateButton();
-            
-            //DrawAllStates();
 
             serializedObject.ApplyModifiedProperties();
         }
@@ -108,18 +113,17 @@ namespace TarasK8.UI.Editor.Animations
             EditorGUILayout.EndHorizontal();
         }
 
-        public void DrawAddPropertyButton()
+        private void DrawAddPropertyButton()
         {
+            var lastRect = GUILayoutUtility.GetLastRect();
             if (MyGuiUtility.DrawAddButton("Add Animated Property"))
             {
-                var type = _propertiesTypes[_selectedTypeOption];
-                AnimatedProperty animatedProperty = (AnimatedProperty)Activator.CreateInstance(type);
-                _target.AddAnimatedProperty(animatedProperty);
-                EditorUtility.SetDirty(target);
+                _addPropertyDropdown.OnItemSelected = AddProperty;
+                _addPropertyDropdown.Show(CalculateDropdownRect(lastRect));
             }
         }
 
-        public void DrawAddStateButton()
+        private void DrawAddStateButton()
         {
             if (MyGuiUtility.DrawAddButton("Add State"))
             {
@@ -127,6 +131,14 @@ namespace TarasK8.UI.Editor.Animations
                 _target.AddState(name);
                 EditorUtility.SetDirty(serializedObject.targetObject);
             }
+        }
+
+        private void AddProperty(int index)
+        {
+            var type = _propertiesTypes[index];
+            AnimatedProperty animatedProperty = (AnimatedProperty)Activator.CreateInstance(type);
+            _target.AddAnimatedProperty(animatedProperty);
+            EditorUtility.SetDirty(target);
         }
 
         private List<Type> GetAnimatedPropertyTypes()
@@ -141,6 +153,19 @@ namespace TarasK8.UI.Editor.Animations
                 derivedTypes.AddRange(types.Where(t => t.IsSubclassOf(baseType) && !t.IsAbstract));
             }
             return derivedTypes;
+        }
+
+        private Rect CalculateDropdownRect(Rect lastRect)
+        {
+            const float width = 230f;
+            const float buttonSpacing = 27f;
+            const float xOffset = 18f;
+            
+            float x = (lastRect.width - width) * 0.5f + xOffset;
+            float y = lastRect.y + buttonSpacing;
+            var rect = new Rect(x, y, width, lastRect.height);
+            
+            return rect;
         }
     }
 }
