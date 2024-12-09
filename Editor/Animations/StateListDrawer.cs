@@ -11,11 +11,9 @@ namespace TarasK8.UI.Editor
     {
         public const string NameFieldName = "<Name>k__BackingField";
         
-        public static void Draw(SerializedProperty property, StateList stateList)
+        public static void Draw(SerializedProperty property)
         {
             var listProperty = property.FindPropertyRelative("_states");
-            
-            EditorGUILayout.LabelField($"States ({stateList.Count})", EditorStyles.boldLabel);
 
             for (int i = 0; i < listProperty.arraySize; i++)
             {

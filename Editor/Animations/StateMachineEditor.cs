@@ -24,8 +24,11 @@ namespace TarasK8.UI.Editor.Animations
         private SerializedProperty _fullyComplete;
         private SerializedProperty _defaultState;
         private SerializedProperty _animatedProperties;
-        private StateMachine _target;
         private SerializedProperty _states;
+        private static bool _showProperties = true;
+        private static bool _showStates = true;
+        
+        private StateMachine _target;
 
         private void OnEnable()
         {
@@ -59,16 +62,26 @@ namespace TarasK8.UI.Editor.Animations
 
             DrawOptions();
             
-            EditorGUILayout.Space(15f);
+            EditorGUILayout.Space();
+
+            _showProperties = EditorGUILayout.BeginFoldoutHeaderGroup(_showProperties,
+                $"Animated Properties ({_animatedProperties.arraySize})");
+            if (_showProperties)
+            {
+                DrawAllAnimatedProperties();
+                DrawAddPropertyButton();
+            }
+            EditorGUILayout.EndFoldoutHeaderGroup();
             
-            DrawLabel();
-            DrawAllAnimatedProperties();
-            DrawAddPropertyButton();
-            
-            EditorGUILayout.Space(15f);
-            
-            StateListDrawer.Draw(_states, _target.States);
-            DrawAddStateButton();
+            EditorGUILayout.Space();
+
+            _showStates = EditorGUILayout.BeginFoldoutHeaderGroup(_showStates, $"States ({_target.States.Count})");
+            if (_showStates)
+            {
+                StateListDrawer.Draw(_states);
+                DrawAddStateButton();
+            }
+            EditorGUILayout.EndFoldoutHeaderGroup();
 
             serializedObject.ApplyModifiedProperties();
         }
@@ -87,30 +100,26 @@ namespace TarasK8.UI.Editor.Animations
                 EditorGUILayout.BeginVertical(GUI.skin.box);
 
                 var animatedProperty = _animatedProperties.GetArrayElementAtIndex(i);
+                var childs = animatedProperty.GetChildProperties().ToArray();
+                
                 EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.PropertyField(childs[0], GUIContent.none, GUILayout.Width(16f));
                 EditorGUILayout.LabelField(animatedProperty.managedReferenceValue.GetType().Name, EditorStyles.boldLabel);
                 if (MyGuiUtility.DrawRemoveButton())
                 {
                     _target.RemoveAnimatedProperty(i);
                     EditorUtility.SetDirty(target);
                 }
+
                 EditorGUILayout.EndHorizontal();
-
-                var childs = animatedProperty.GetChildProperties();
-                foreach (var element in childs)
+                for (int j = 1; j < childs.Length; j++)
                 {
-
+                    var element = childs[j];
                     EditorGUILayout.PropertyField(element);
                 }
+
                 EditorGUILayout.EndVertical();
             }
-        }
-        
-        private void DrawLabel()
-        {
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField($"Animated Properties ({_animatedProperties.arraySize})", EditorStyles.boldLabel);
-            EditorGUILayout.EndHorizontal();
         }
 
         private void DrawAddPropertyButton()
@@ -137,6 +146,7 @@ namespace TarasK8.UI.Editor.Animations
         {
             var type = _propertiesTypes[index];
             AnimatedProperty animatedProperty = (AnimatedProperty)Activator.CreateInstance(type);
+            
             _target.AddAnimatedProperty(animatedProperty);
             EditorUtility.SetDirty(target);
         }

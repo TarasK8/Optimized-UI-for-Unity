@@ -9,6 +9,10 @@ namespace TarasK8.UI.Animations.AnimatedProperties
     [Serializable]
     public abstract class AnimatedProperty : Tween
     {
+        [SerializeField] private bool _enabled = true;
+        
+        public bool Enabled { get => _enabled; set => _enabled = value; }
+        
         public abstract void SetAnimationData(IAnimationData data);
         
         public abstract IAnimationData CreateNewAnimationData();
