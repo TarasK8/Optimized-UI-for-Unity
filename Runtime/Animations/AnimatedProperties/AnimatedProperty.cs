@@ -22,21 +22,21 @@ namespace TarasK8.UI.Animations.AnimatedProperties
     public abstract class AnimatedProperty<T> : AnimatedProperty
         where T : IAnimationData, new()
     {
-        private T _data;
+        private T _animData;
 
-        public override void SetAnimationData(IAnimationData data)
+        public sealed override void SetAnimationData(IAnimationData data)
         {
-            _data = (T)data;
+            _animData = (T)data;
         }
 
-        public override IAnimationData CreateNewAnimationData()
+        public sealed override IAnimationData CreateNewAnimationData()
         {
             return new T();
         }
 
-        public override void Start()
+        public sealed override void Start()
         {
-            Start(_data);
+            Start(_animData);
         }
 
         public abstract void Start(T data);

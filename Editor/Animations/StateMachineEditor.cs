@@ -54,6 +54,12 @@ namespace TarasK8.UI.Editor.Animations
                 var state = new AdvancedDropdownState();
                 _addPropertyDropdown = new AnimatedPropertiesDropdown(state, _propertiesTypesOptions);
             }
+            _showProperties = EditorPrefs.GetBool(nameof(_showProperties), _showProperties);
+        }
+
+        private void OnDisable()
+        {
+            EditorPrefs.SetBool(nameof(_showProperties), _showProperties);
         }
 
         public override void OnInspectorGUI()
