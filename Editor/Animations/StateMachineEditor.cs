@@ -101,14 +101,18 @@ namespace TarasK8.UI.Editor.Animations
 
                 var animatedProperty = _animatedProperties.GetArrayElementAtIndex(i);
                 var childs = animatedProperty.GetChildProperties().ToArray();
-                
+
                 EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.PropertyField(childs[0], GUIContent.none, GUILayout.Width(16f));
                 EditorGUILayout.LabelField(animatedProperty.managedReferenceValue.GetType().Name, EditorStyles.boldLabel);
                 if (MyGuiUtility.DrawRemoveButton())
                 {
-                    _target.RemoveAnimatedProperty(i);
-                    EditorUtility.SetDirty(target);
+                    foreach (var target in targets)
+                    {
+                        var stateMachine = target as StateMachine;
+                        stateMachine.RemoveAnimatedProperty(i);
+                        EditorUtility.SetDirty(stateMachine);
+                    }
                 }
 
                 EditorGUILayout.EndHorizontal();
@@ -136,9 +140,13 @@ namespace TarasK8.UI.Editor.Animations
         {
             if (MyGuiUtility.DrawAddButton("Add State"))
             {
-                var name = StateListDrawer.GetUniqueName(_target.States);
-                _target.AddState(name);
-                EditorUtility.SetDirty(serializedObject.targetObject);
+                foreach (var target in targets)
+                {
+                    var stateMachine = target as StateMachine;
+                    var name = StateListDrawer.GetUniqueName(stateMachine.States);
+                    stateMachine.AddState(name);
+                    EditorUtility.SetDirty(stateMachine);
+                }
             }
         }
 
@@ -146,9 +154,12 @@ namespace TarasK8.UI.Editor.Animations
         {
             var type = _propertiesTypes[index];
             AnimatedProperty animatedProperty = (AnimatedProperty)Activator.CreateInstance(type);
-            
-            _target.AddAnimatedProperty(animatedProperty);
-            EditorUtility.SetDirty(target);
+            foreach (var target in targets)
+            {
+                var stateMachine = target as StateMachine;
+                stateMachine.AddAnimatedProperty(animatedProperty);
+                EditorUtility.SetDirty(stateMachine);
+            }
         }
 
         private List<Type> GetAnimatedPropertyTypes()
