@@ -1,11 +1,11 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace TarasK8.UI.Animations.Transitions
+namespace TarasK8.UI.Animations.AnimatedProperties
 {
     [System.Serializable]
     [TransitionMenuName("Image/Color Tint")]
-    public class ColorTint : Transition<ColorTint.Data>
+    public class ColorTint : AnimatedProperty<ColorTint.Data>
     {
         [SerializeField] private float _duration = 0.2f;
         [SerializeField] private float _delay = 0f;
@@ -25,7 +25,6 @@ namespace TarasK8.UI.Animations.Transitions
         [System.Serializable]
         public class Data : IAnimationData
         {
-            [field: SerializeField] public string Name { get; set; }
             [SerializeField] public UnityEngine.Color Color = UnityEngine.Color.white;
         }
     }

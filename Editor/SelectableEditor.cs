@@ -77,9 +77,9 @@ namespace TarasK8.UI.Editor
                 EditorGUI.indentLevel++;
                 EditorGUILayout.PropertyField(_stateMachine);
                 StateMachine stateMachine = ((Selectable)target).GetStateMachine();
-                if(stateMachine is not null)
+                if(stateMachine != null)
                 {
-                    string[] options = stateMachine.GetAllStateNames();
+                    string[] options = stateMachine.States.GetAllNames().ToArray();
                     StateField(_normal, options);
                     StateField(_hover, options);
                     StateField(_pressed, options);
@@ -88,8 +88,8 @@ namespace TarasK8.UI.Editor
                 }
                 EditorGUI.indentLevel--;
             }
-            EditorGUILayout.EndFadeGroup();
 
+            EditorGUILayout.EndFadeGroup();
             EditorGUILayout.Space();
 
             EditorGUILayout.PropertyField(_navigation);

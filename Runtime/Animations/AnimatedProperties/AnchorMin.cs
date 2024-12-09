@@ -1,11 +1,11 @@
 using System;
 using UnityEngine;
 
-namespace TarasK8.UI.Animations.Transitions
+namespace TarasK8.UI.Animations.AnimatedProperties
 {
     [Serializable]
-    [TransitionMenuName("Rect Transform/Pivot")]
-    public class Pivot : Transition<Pivot.Data>
+    [TransitionMenuName("Rect Transform/Anchor Min")]
+    public class AnchorMin : AnimatedProperty<AnchorMin.Data>
     {
         [field: SerializeField] public override float Delay { get; protected set; }
         [field: SerializeField] public override float Duration { get; protected set; }
@@ -18,20 +18,19 @@ namespace TarasK8.UI.Animations.Transitions
         public override void Start(Data data)
         {
             _data = data;
-            _current = _targetTransform.pivot;
+            _current = _targetTransform.anchorMin;
         }
 
         public override void Process(float t)
         {
             float lerp = _easing.Evaluate(t);
-            _targetTransform.pivot = Vector2.LerpUnclamped(_current, _data.Pivot, lerp);
+            _targetTransform.anchorMin = Vector2.LerpUnclamped(_current, _data.AnchorMin, lerp);
         }
 
         [Serializable]
         public class Data : IAnimationData
         {
-            [field: SerializeField] public string Name { get; set; }
-            [SerializeField] public Vector2 Pivot = Vector3.one;
+            [SerializeField] public Vector2 AnchorMin = Vector3.one;
         }
     }
 }

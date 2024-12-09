@@ -1,19 +1,19 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace TarasK8.UI.Animations.Transitions
+namespace TarasK8.UI.Animations.AnimatedProperties
 {
     [System.Serializable]
-    [TransitionMenuName("Canvas Group/Fade")]
-    public class CanvasGroupFade : Transition<CanvasGroupFade.Data>
+    [TransitionMenuName("Image/Color")]
+    public class Color : AnimatedProperty<Color.Data>
     {
         [SerializeField] private float _duration = 0.2f;
         [SerializeField] private float _delay = 0f;
         [SerializeField] public Easing _easing;
-        [SerializeField] private CanvasGroup _targetGroup;
+        [SerializeField] private Graphic _targetGraphic;
 
         private Data _data;
-        private float _currentAlpha;
+        private UnityEngine.Color _current;
 
         public override float Delay { get => _delay; protected set => _delay = value; }
         public override float Duration { get => _duration; protected set => _duration = value; }
@@ -21,20 +21,19 @@ namespace TarasK8.UI.Animations.Transitions
         public override void Start(Data data)
         {
             _data = data;
-            _currentAlpha = _targetGroup.alpha;
+            _current = _targetGraphic.color;
         }
 
         public override void Process(float t)
         {
             float lerp = _easing.Evaluate(t);
-            _targetGroup.alpha = Mathf.LerpUnclamped(_currentAlpha, _data.Alpha, lerp);
+            _targetGraphic.color = UnityEngine.Color.LerpUnclamped(_current, _data.Color, lerp);
         }
 
         [System.Serializable]
         public class Data : IAnimationData
         {
-            [field: SerializeField] public string Name { get; set; }
-            [SerializeField, Range(0f, 1f)] public float Alpha = 0f;
+            [SerializeField] public UnityEngine.Color Color = UnityEngine.Color.white;
         }
     }
 }

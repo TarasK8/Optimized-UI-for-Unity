@@ -23,7 +23,7 @@ namespace TarasK8.UI
             if (transition != Transition.None)
             {
                 transition = Transition.None;
-                //Debug.Log("The classic transition cannot be used here");
+                //Debug.Log("The classic animatedProperty cannot be used here");
             }
         }
 #endif

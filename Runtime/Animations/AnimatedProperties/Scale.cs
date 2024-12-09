@@ -1,38 +1,37 @@
 using System;
-using TarasK8.UI.Layout;
 using UnityEngine;
 
-namespace TarasK8.UI.Animations.Transitions
+namespace TarasK8.UI.Animations.AnimatedProperties
 {
     [Serializable]
-    [TransitionMenuName("Flex/Grow")]
-    public class FlexGrow : Transition<FlexGrow.Data>
+    [TransitionMenuName("Transform/Scale")]
+    public class Scale : AnimatedProperty<Scale.Data>
     {
+        // You can add the [field: SerializeField] attribute to avoid adding additional fields
         [field: SerializeField] public override float Duration { get; protected set; }
         [field: SerializeField] public override float Delay { get; protected set; }
         [SerializeField] public Easing _easing;
-        [SerializeField] private FlexLayoutElement _targetElement;
+        [SerializeField] private Transform _targetTransform;
 
+        private Vector3 _current;
         private Data _data;
-        private float _currentGrow;
 
         public override void Start(Data data)
         {
             _data = data;
-            _currentGrow = _targetElement.Grow;
+            _current = _targetTransform.localScale;
         }
 
         public override void Process(float t)
         {
             float lerp = _easing.Evaluate(t);
-            _targetElement.Grow = Mathf.LerpUnclamped(_currentGrow, _data.Grow, lerp);
+            _targetTransform.localScale = Vector3.LerpUnclamped(_current, _data.Scale, lerp);
         }
 
         [Serializable]
         public class Data : IAnimationData
         {
-            [field: SerializeField] public string Name { get; set; }
-            [SerializeField] public float Grow = 1f;
+            [SerializeField] public Vector3 Scale = Vector3.one;
         }
     }
 }

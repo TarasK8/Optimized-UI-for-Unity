@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using TarasK8.UI.Animations;
+using TarasK8.UI.Animations.AnimatedProperties;
+using TarasK8.UI.Editor.Utils;
 using UnityEditor;
+using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 
 namespace TarasK8.UI.Editor.Animations
@@ -14,34 +17,49 @@ namespace TarasK8.UI.Editor.Animations
     {
         private static string[] _propertiesTypesOptions;
         private static List<Type> _propertiesTypes;
+        private static AnimatedPropertiesDropdown _addPropertyDropdown;
         private int _selectedTypeOption;
         private string _selectedStateName;
         private SerializedProperty _ignoreTimeScale;
-        private SerializedProperty _fullyComplate;
+        private SerializedProperty _fullyComplete;
         private SerializedProperty _defaultState;
-        private SerializedProperty _transitions;
+        private SerializedProperty _animatedProperties;
+        private SerializedProperty _states;
+        private static bool _showProperties = true;
+        private static bool _showStates = true;
+        
         private StateMachine _target;
 
         private void OnEnable()
         {
             _target = target as StateMachine;
             _ignoreTimeScale = serializedObject.FindProperty("_ignoreTimeScale");
-            _fullyComplate = serializedObject.FindProperty("_fullyComplateTransition");
+            _fullyComplete = serializedObject.FindProperty("_fullyCompleteTransition");
             _defaultState = serializedObject.FindProperty("_defaultState");
-            _transitions = serializedObject.FindProperty("_transitions");
+            _animatedProperties = serializedObject.FindProperty("_animatedProperties");
+            _states = serializedObject.FindProperty("_states");
 
             // Initialize _propertiesTypes and _propertiesTypesOptions if not already done
             if (_propertiesTypes == null)
             {
-                Debug.Log("Init properties types option");
-                _propertiesTypes = GetTransitionTypes();
+                // Debug.Log("Init properties types option");
+                _propertiesTypes = GetAnimatedPropertyTypes();
                 _propertiesTypesOptions = new string[_propertiesTypes.Count];
                 for (int i = 0; i < _propertiesTypes.Count; i++)
                 {
                     TransitionMenuNameAttribute attribute = (TransitionMenuNameAttribute)Attribute.GetCustomAttribute(_propertiesTypes[i], typeof(TransitionMenuNameAttribute));
-                    _propertiesTypesOptions[i] = attribute?.MenuName ?? _propertiesTypes[i].Name;
+                    string option = attribute?.MenuName ?? _propertiesTypes[i].Name;
+                    _propertiesTypesOptions[i] = option;
                 }
+                var state = new AdvancedDropdownState();
+                _addPropertyDropdown = new AnimatedPropertiesDropdown(state, _propertiesTypesOptions);
             }
+            _showProperties = EditorPrefs.GetBool(nameof(_showProperties), _showProperties);
+        }
+
+        private void OnDisable()
+        {
+            EditorPrefs.SetBool(nameof(_showProperties), _showProperties);
         }
 
         public override void OnInspectorGUI()
@@ -49,119 +67,110 @@ namespace TarasK8.UI.Editor.Animations
             serializedObject.Update();
 
             DrawOptions();
-            EditorGUILayout.Space(15f);
-            DrawCreateTransitionButton();
-            DrawAllTransitions();
-            EditorGUILayout.Space(15f);
-            DrawCreateStateButton();
-            DrawAllStates();
+            
+            EditorGUILayout.Space();
+
+            _showProperties = EditorGUILayout.BeginFoldoutHeaderGroup(_showProperties,
+                $"Animated Properties ({_animatedProperties.arraySize})");
+            if (_showProperties)
+            {
+                DrawAllAnimatedProperties();
+                DrawAddPropertyButton();
+            }
+            EditorGUILayout.EndFoldoutHeaderGroup();
+            
+            EditorGUILayout.Space();
+
+            _showStates = EditorGUILayout.BeginFoldoutHeaderGroup(_showStates, $"States ({_target.States.Count})");
+            if (_showStates)
+            {
+                StateListDrawer.Draw(_states);
+                DrawAddStateButton();
+            }
+            EditorGUILayout.EndFoldoutHeaderGroup();
 
             serializedObject.ApplyModifiedProperties();
         }
 
         private void DrawOptions()
         {
-            EditorGUILayout.LabelField("Options", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(_ignoreTimeScale);
-            EditorGUILayout.PropertyField(_fullyComplate);
+            EditorGUILayout.PropertyField(_fullyComplete);
             EditorGUILayout.PropertyField(_defaultState);
         }
 
-        private void DrawAllTransitions()
+        private void DrawAllAnimatedProperties()
         {
-            for (int i = 0; i < _transitions.arraySize; i++)
+            for (int i = 0; i < _animatedProperties.arraySize; i++)
             {
-                EditorGUILayout.BeginVertical("Box");
+                EditorGUILayout.BeginVertical(GUI.skin.box);
 
-                var transition = _transitions.GetArrayElementAtIndex(i);
+                var animatedProperty = _animatedProperties.GetArrayElementAtIndex(i);
+                var childs = animatedProperty.GetChildProperties().ToArray();
+
                 EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField(transition.managedReferenceValue.GetType().Name, EditorStyles.boldLabel);
-                if (GUILayout.Button("Delete"))
+                EditorGUILayout.PropertyField(childs[0], GUIContent.none, GUILayout.Width(16f));
+                EditorGUILayout.LabelField(animatedProperty.managedReferenceValue.GetType().Name, EditorStyles.boldLabel);
+                if (MyGuiUtility.DrawRemoveButton())
                 {
-                    _target.RemoveTransition(i);
-                    EditorUtility.SetDirty(target);
+                    foreach (var target in targets)
+                    {
+                        var stateMachine = target as StateMachine;
+                        stateMachine.RemoveAnimatedProperty(i);
+                        EditorUtility.SetDirty(stateMachine);
+                    }
                 }
-                EditorGUILayout.EndHorizontal();
 
-                var childs = transition.GetChildProperties();
-                foreach (var element in childs)
+                EditorGUILayout.EndHorizontal();
+                for (int j = 1; j < childs.Length; j++)
                 {
-                    if (element.name == Transition.STATES_FIELD_NAME) continue;
+                    var element = childs[j];
                     EditorGUILayout.PropertyField(element);
                 }
+
                 EditorGUILayout.EndVertical();
             }
         }
 
-        private void DrawAllStates()
+        private void DrawAddPropertyButton()
         {
-            if (_transitions.arraySize == 0) return;
-            var states = _transitions.GetArrayElementAtIndex(0).FindPropertyRelative(Transition.STATES_FIELD_NAME);
-
-            for (int j = 0; j < states.arraySize; j++)
+            var lastRect = GUILayoutUtility.GetLastRect();
+            if (MyGuiUtility.DrawAddButton("Add Animated Property"))
             {
-                var state = states.GetArrayElementAtIndex(j);
-                DrawState(j, state, states);
+                _addPropertyDropdown.OnItemSelected = AddProperty;
+                _addPropertyDropdown.Show(CalculateDropdownRect(lastRect));
             }
         }
 
-        private void DrawState(int index, SerializedProperty state, SerializedProperty allStates)
+        private void DrawAddStateButton()
         {
-            EditorGUILayout.BeginVertical("Box");
-            EditorGUILayout.BeginHorizontal();
-            string currentName = state.FindPropertyRelative(IAnimationData.NAME_FIELD_NAME).stringValue;
-            string newName = EditorGUILayout.TextField(currentName);
-            if (newName != currentName)
+            if (MyGuiUtility.DrawAddButton("Add State"))
             {
-                _target.RenameState(index, newName);
-                EditorUtility.SetDirty(target);
-            }
-            if (GUILayout.Button("Delete"))
-            {
-                _target.RemoveState(index);
-                EditorUtility.SetDirty(target);
-            }
-            EditorGUILayout.EndHorizontal();
-            for (int i = 0; i < _transitions.arraySize; i++)
-            {
-                var drawState = _transitions.GetArrayElementAtIndex(i).FindPropertyRelative(Transition.STATES_FIELD_NAME).GetArrayElementAtIndex(index);
-                foreach (var item in drawState.GetChildProperties())
+                foreach (var target in targets)
                 {
-                    if (item.name == IAnimationData.NAME_FIELD_NAME) continue;
-                    EditorGUILayout.PropertyField(item);
+                    var stateMachine = target as StateMachine;
+                    var name = StateListDrawer.GetUniqueName(stateMachine.States);
+                    stateMachine.AddState(name);
+                    EditorUtility.SetDirty(stateMachine);
                 }
             }
-            EditorGUILayout.EndVertical();
         }
 
-        private void DrawCreateTransitionButton()
+        private void AddProperty(int index)
         {
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField($"Transitions ({_transitions.arraySize})", EditorStyles.boldLabel);
-            _selectedTypeOption = EditorGUILayout.Popup(_selectedTypeOption, _propertiesTypesOptions);
-            if (GUILayout.Button("Add", GUILayout.Width(60f)))
+            var type = _propertiesTypes[index];
+            AnimatedProperty animatedProperty = (AnimatedProperty)Activator.CreateInstance(type);
+            foreach (var target in targets)
             {
-                _target.AddTransition(_propertiesTypes[_selectedTypeOption]);
+                var stateMachine = target as StateMachine;
+                stateMachine.AddAnimatedProperty(animatedProperty);
+                EditorUtility.SetDirty(stateMachine);
             }
-            EditorGUILayout.EndHorizontal();
         }
 
-        private void DrawCreateStateButton()
+        private List<Type> GetAnimatedPropertyTypes()
         {
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField($"States ({GetStatesCount()})", EditorStyles.boldLabel);
-            _selectedStateName = EditorGUILayout.TextField(_selectedStateName);
-            if (GUILayout.Button("Add", GUILayout.Width(60f)))
-            {
-                _target.AddState(_selectedStateName);
-                EditorUtility.SetDirty(target);
-            }
-            EditorGUILayout.EndHorizontal();
-        }
-
-        private List<Type> GetTransitionTypes()
-        {
-            Type baseType = typeof(Transition);
+            Type baseType = typeof(AnimatedProperty);
             Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
             List<Type> derivedTypes = new List<Type>();
 
@@ -173,11 +182,17 @@ namespace TarasK8.UI.Editor.Animations
             return derivedTypes;
         }
 
-        private int GetStatesCount()
+        private Rect CalculateDropdownRect(Rect lastRect)
         {
-            if (_transitions.arraySize == 0) return 0;
-            var states = _transitions.GetArrayElementAtIndex(0).FindPropertyRelative(Transition.STATES_FIELD_NAME);
-            return states.arraySize;
+            const float width = 230f;
+            const float buttonSpacing = 27f;
+            const float xOffset = 18f;
+            
+            float x = (lastRect.width - width) * 0.5f + xOffset;
+            float y = lastRect.y + buttonSpacing;
+            var rect = new Rect(x, y, width, lastRect.height);
+            
+            return rect;
         }
     }
 }

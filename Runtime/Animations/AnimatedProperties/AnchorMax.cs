@@ -1,37 +1,36 @@
 using System;
 using UnityEngine;
 
-namespace TarasK8.UI.Animations.Transitions
+namespace TarasK8.UI.Animations.AnimatedProperties
 {
     [Serializable]
-    [TransitionMenuName("Transform/Rotation")]
-    public class Rotation : Transition<Rotation.Data>
+    [TransitionMenuName("Rect Transform/Anchor Max")]
+    public class AnchorMax : AnimatedProperty<AnchorMax.Data>
     {
         [field: SerializeField] public override float Delay { get; protected set; }
         [field: SerializeField] public override float Duration { get; protected set; }
         [SerializeField] public Easing _easing;
-        [SerializeField] private Transform _targetTransform;
+        [SerializeField] private RectTransform _targetTransform;
 
-        private Quaternion _current;
+        private Vector2 _current;
         private Data _data;
 
         public override void Start(Data data)
         {
             _data = data;
-            _current = _targetTransform.localRotation;
+            _current = _targetTransform.anchorMax;
         }
 
         public override void Process(float t)
         {
             float lerp = _easing.Evaluate(t);
-            _targetTransform.localRotation = Quaternion.LerpUnclamped(_current, _data.Rotation, lerp);
+            _targetTransform.anchorMax = Vector2.LerpUnclamped(_current, _data.AnchorMax, lerp);
         }
 
         [Serializable]
         public class Data : IAnimationData
         {
-            [field: SerializeField] public string Name { get; set; }
-            [SerializeField] public Quaternion Rotation = Quaternion.identity;
+            [SerializeField] public Vector2 AnchorMax = Vector3.one;
         }
     }
 }
