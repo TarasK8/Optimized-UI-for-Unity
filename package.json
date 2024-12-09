@@ -1,6 +1,6 @@
 {
   "name": "com.tarask8.optimized-ui",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "displayName": "Optimized UI",
   "description": "A package for Unity that is designed to greatly simplify user interface development.",
   "unity": "2022.3",

@@ -90,6 +90,8 @@ namespace TarasK8.UI.Animations
             for (int i = 0; i < _animatedProperties.Count; i++)
             {
                 var animatedProperty = _animatedProperties[i];
+                if(animatedProperty.Enabled == false)
+                    continue;
                 animatedProperty.SetAnimationData(_states.GetAnimationData(stateIndex, i));
                 if (animatedProperty.IsStarted && _fullyCompleteTransition)
                     animatedProperty.Process(1f);
