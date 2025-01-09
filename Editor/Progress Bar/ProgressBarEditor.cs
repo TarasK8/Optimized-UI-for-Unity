@@ -5,7 +5,7 @@ using UnityEngine;
 namespace TarasK8.UI.Editor
 {
     [CanEditMultipleObjects]
-    [CustomEditor(typeof(ProgressBar))]
+    [CustomEditor(typeof(ProgressBar), true)]
     public class ProgressBarEditor : ProgressBarBaseEditor
     {
         private SerializedProperty _bar;
