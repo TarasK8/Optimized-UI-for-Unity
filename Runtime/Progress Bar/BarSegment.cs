@@ -6,7 +6,7 @@ namespace TarasK8.UI
     [AddComponentMenu("Optimized UI/Progress Bar/Bar Segment")]
     [DisallowMultipleComponent]
     [RequireComponent(typeof(RectTransform))]
-    public class BarSegment : MonoBehaviour
+    public class BarSegment : BarSegmentBase
     {
         [SerializeField, HideInInspector] private RectTransform _rectTransform;
         [SerializeField] private Axis _axis;
@@ -25,24 +25,6 @@ namespace TarasK8.UI
             }
         }
 
-        public event Action<float, float> OnStartPositionChange;
-        public event Action<float, float> OnEndPositionChange;
-        public (float start, float end) Position
-        {
-            get => (GetPositionStart(), GetPositionEnd());
-            set => SetPosition(value.start, value.end);
-        }
-        public float PositionStart
-        {
-            get => GetPositionStart();
-            set => SetPositionStartWithEvent(value);
-        }
-        public float PositionEnd
-        {
-            get => GetPositionEnd();
-            set => SetPositionEndWithEvent(value);
-        }
-
         private RectTransform RectTransform
         {
             get
@@ -53,32 +35,7 @@ namespace TarasK8.UI
             }
         }
 
-        public void SetPosition(float start, float end)
-        {
-            if (start > end)
-            {
-                (start, end) = (end, start);
-            }
-
-            SetPositionStartWithEvent(start);
-            SetPositionEndWithEvent(end);
-        }
-
-        private void SetPositionStartWithEvent(float position)
-        {
-            float oldPosition = PositionStart;
-            SetPositionStart(position);
-            OnStartPositionChange?.Invoke(oldPosition, position);
-        }
-
-        private void SetPositionEndWithEvent(float position)
-        {
-            float oldPosition = PositionEnd;
-            SetPositionEnd(position);
-            OnEndPositionChange?.Invoke(oldPosition, position);
-        }
-
-        protected virtual void SetPositionStart(float position)
+        protected override void SetPositionStart(float position)
         {
             RectTransform.anchorMin = _axis switch
             {
@@ -88,7 +45,7 @@ namespace TarasK8.UI
             };
         }
 
-        protected virtual void SetPositionEnd(float position)
+        protected override void SetPositionEnd(float position)
         {
             RectTransform.anchorMax = _axis switch
             {
@@ -98,14 +55,14 @@ namespace TarasK8.UI
             };
         }
 
-        protected virtual float GetPositionStart() => _axis switch
+        protected override float GetPositionStart() => _axis switch
         {
             Axis.Horizontal => RectTransform.anchorMin.x,
             Axis.Vertical => RectTransform.anchorMin.y,
             _ => throw new NotImplementedException()
         };
 
-        protected virtual float GetPositionEnd() => _axis switch
+        protected override float GetPositionEnd() => _axis switch
         {
             Axis.Horizontal => RectTransform.anchorMax.x,
             Axis.Vertical => RectTransform.anchorMax.y,
