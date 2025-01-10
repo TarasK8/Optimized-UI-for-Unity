@@ -5,7 +5,7 @@ namespace TarasK8.UI
 {
     [AddComponentMenu("Optimized UI/Progress Bar/Progress Bar")]
     [ExecuteInEditMode]
-    public class ProgressBar : ProgressBarBase
+    public class ProgressBar : ProgressBarBase, IBarSegmentUpdater
     {
         [SerializeField] private BarSegmentBase _fillBar;
         [SerializeField] private Direction _direction;
