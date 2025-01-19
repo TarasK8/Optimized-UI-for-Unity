@@ -23,47 +23,69 @@ namespace TarasK8.UI
 
         public float Length => RepeatAngle(_endAngle - _startAngle);
 
+        public float GlobalStartAngle => GetAngleStart();
+        public float GlobalEndAngle => GetAngleEnd();
+
+#if UNITY_EDITOR
         private void OnValidate()
         {
             if(!_image)
                 _image = GetComponent<Image>();
             if(!_rectTransform)
                 _rectTransform = GetComponent<RectTransform>();
+
+            _image.fillMethod = Image.FillMethod.Radial360;
+            _image.fillClockwise = false;
         }
 
-#if UNITY_EDITOR
         private void Update()
         {
             if(Application.isPlaying || !_image || !_rectTransform) return;
             if(TryGetComponent<IBarSegmentUpdater>(out _)) return;
             
+            UpdateShape();
+        }
+#endif
+        
+        public void UpdateShape()
+        {
             SetPositionStart(_startPosition);
             SetPositionEnd(_endPosition);
         }
-        #endif
+
+        public void SetAngles(float startAngle, float endAngle)
+        {
+            _startAngle = startAngle;
+            _endAngle = endAngle;
+            UpdateShape();
+        }
 
         protected override void SetPositionStart(float position)
         {
             var a = AngleToPosition(Length);
             var b = Mathf.Lerp(0f, a, position);
-            var rotation = _rectTransform.eulerAngles;
+            var rotation = _rectTransform.localEulerAngles;
             var newRotation = new Vector3(rotation.x, rotation.y, PositionToAngle(b) + _startAngle);
-            _rectTransform.eulerAngles = newRotation;
+            _rectTransform.localEulerAngles = newRotation;
         }
 
         protected override void SetPositionEnd(float position)
         {
             var a = AngleToPosition(Length);
             var b = Mathf.Lerp(0f, a, position);
-            var amount = b - GetPositionStart();
-            _image.fillAmount = amount;
+            var startPos = GetPositionStart();
+            var amount = b - startPos;
+            if (amount < 0f)
+                amount = b - (1f - startPos); // crutch, to prevent a bug when an element can visually disappear
+            _image.fillAmount = Mathf.Abs(amount);
         }
 
         protected override float GetPositionStart()
         {
             var a = GetAngleStart();
             var b = _startAngle;
-            return AngleToPosition(a - b);
+            var result = AngleToPosition(a - b);
+            return result;
         }
 
         protected override float GetPositionEnd()
@@ -75,26 +97,34 @@ namespace TarasK8.UI
 
         private float GetAngleStart()
         {
-            return RepeatAngle(_rectTransform.eulerAngles.z);
+            return RepeatAngle(_rectTransform.localEulerAngles.z);
         }
 
         private float GetAngleEnd()
         {
-            return _rectTransform.eulerAngles.z + PositionToAngle(_image.fillAmount);
+            return _rectTransform.localEulerAngles.z + PositionToAngle(_image.fillAmount);
         }
 
-        private float AngleToPosition(float angle)
+        [ContextMenu("Set Recommended Image Parameters")]
+        private void SetRecommendedImageParameters()
+        {
+            _image.type = Image.Type.Filled;
+            _image.fillMethod = Image.FillMethod.Radial360;
+            _image.fillClockwise = false;
+        }
+
+        public static float AngleToPosition(float angle)
         {
             float result = RepeatAngle(angle) / Circle;
             return result;
         }
 
-        private float PositionToAngle(float value)
+        public static float PositionToAngle(float value)
         {
             return value * Circle;
         }
 
-        private float RepeatAngle(float angle)
+        public static float RepeatAngle(float angle)
         {
             angle = (float)Math.Round(angle, 3); // To avoid float precision troubles
             var result = Mathf.Repeat(angle, Circle);

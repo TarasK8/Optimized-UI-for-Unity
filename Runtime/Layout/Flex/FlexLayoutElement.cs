@@ -62,7 +62,8 @@ namespace TarasK8.UI.Layout
             ref float nextPosition,
             bool forceSize)
         {
-            float size = CalculateFlexSize(_grow, _shrink, _basis, totalSize, totalGrow, totalShrink, totalBasis);
+            float freeSpace = totalSize - totalBasis;
+            float size = FlexBoxUtility.CalculateElementSize(_grow, _shrink, _basis, totalGrow, totalShrink, freeSpace);
             float position = size / 2f;
 
             Vector2 containerSize = _containerTransform.sizeDelta;
@@ -71,20 +72,6 @@ namespace TarasK8.UI.Layout
             _transform.anchoredPosition = CalculatePosition(direction, position, nextPosition, padding, containerSize, forceSize);
             UpdateAnchors();
             nextPosition += size;
-        }
-
-        public float CalculateFlexSize(float grow, float shrink, float basis, float totalSize, float totalGrow, float totalShrink, float totalBasis)
-        {
-            float freeSpace = totalSize - totalBasis;
-
-            if (freeSpace > 0)
-            {
-                return basis + (grow / totalGrow) * freeSpace;
-            }
-            else
-            {
-                return basis + (shrink / totalShrink) * freeSpace;
-            }
         }
 
         public void UpdateTracker()
