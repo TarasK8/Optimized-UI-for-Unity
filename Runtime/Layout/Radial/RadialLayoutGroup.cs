@@ -15,7 +15,7 @@ namespace TarasK8.UI.Layout
         [SerializeField] private float _offset = 0f;
         [SerializeField] private float _spacing = 0f;
         [SerializeField] private ProgressBar.Direction _spacingOffsetOrigin;
-        [SerializeField] private List<RadialLayoutElement> _elements = new(16);
+        [SerializeField] private List<RadialLayoutElement> _elements = new();
 
 #if UNITY_EDITOR
         [SerializeField, HideInInspector] private bool _editorUpdate = false;

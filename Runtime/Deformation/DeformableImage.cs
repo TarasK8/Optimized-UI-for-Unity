@@ -10,137 +10,68 @@ namespace TarasK8.UI.Deformation
     [ExecuteAlways]
     public class DeformableImage : DeformableGraphic
     {
-        [Tooltip("Adjust corner position ratio for Sliced or Tiled Image types")]
-        [SerializeField] private Vector2 cornerPosRatio = Vector2.one * -1; // -1 indicates unset
-        private Vector2 oriCornerPosRatio = Vector2.one * -1;
+        private readonly Vector2 _cornerPositionRatio = new Vector2(0.1f, 0.1f); // -1 indicates unset
+        private readonly Vector2 _originalCornerPositionRatio = new Vector2(0.1f, 0.1f);
 
-        private Image UIImage => (Image)Graphic;
+        private Image AttachedImage => (Image)graphic;
 
-        /*
-        protected override void ModifyVertices(List<UIVertex> verts)
-        {
-            if (!IsActive() || !IsDeformed || Deformer == null) return;
-
-            if (UIImage.type == Image.Type.Filled)
-            {
-                Debug.LogWarning("Might not work well Radial Filled at the moment!");
-
-            }
-            else if (UIImage.type == Image.Type.Sliced || UIImage.type == Image.Type.Tiled)
-            {
-                // setting the starting cornerRatio
-                if (cornerPosRatio == Vector2.one * -1)
-                {
-                    cornerPosRatio = verts[ImageTypeCornerReferenceVertexIndex(UIImage.type)].position;
-                    cornerPosRatio.x = (cornerPosRatio.x + RectTrans.pivot.x * RectTrans.rect.width) / RectTrans.rect.width;
-                    cornerPosRatio.y = (cornerPosRatio.y + RectTrans.pivot.y * RectTrans.rect.height) / RectTrans.rect.height;
-
-                    oriCornerPosRatio = cornerPosRatio;
-
-                }
-
-                // constraining the corner ratio 
-                if (cornerPosRatio.x < 0)
-                {
-                    cornerPosRatio.x = 0;
-                }
-                if (cornerPosRatio.x >= 0.5f)
-                {
-                    cornerPosRatio.x = 0.5f;
-                }
-                if (cornerPosRatio.y < 0)
-                {
-                    cornerPosRatio.y = 0;
-                }
-                if (cornerPosRatio.y >= 0.5f)
-                {
-                    cornerPosRatio.y = 0.5f;
-                }
-
-                for (int index = 0; index < verts.Count; index++)
-                {
-                    var uiVertex = verts[index];
-
-                    // finding the horizontal ratio position (0.0 - 1.0) of a vertex
-                    float horRatio = (uiVertex.position.x + RectTrans.rect.width * RectTrans.pivot.x) / RectTrans.rect.width;
-                    float verRatio = (uiVertex.position.y + RectTrans.rect.height * RectTrans.pivot.y) / RectTrans.rect.height;
-
-                    if (horRatio < oriCornerPosRatio.x)
-                    {
-                        horRatio = Mathf.Lerp(0, cornerPosRatio.x, horRatio / oriCornerPosRatio.x);
-                    }
-                    else if (horRatio > 1 - oriCornerPosRatio.x)
-                    {
-                        horRatio = Mathf.Lerp(1 - cornerPosRatio.x, 1, (horRatio - (1 - oriCornerPosRatio.x)) / oriCornerPosRatio.x);
-                    }
-                    else
-                    {
-                        horRatio = Mathf.Lerp(cornerPosRatio.x, 1 - cornerPosRatio.x, (horRatio - oriCornerPosRatio.x) / (1 - oriCornerPosRatio.x * 2));
-                    }
-
-                    if (verRatio < oriCornerPosRatio.y)
-                    {
-                        verRatio = Mathf.Lerp(0, cornerPosRatio.y, verRatio / oriCornerPosRatio.y);
-                    }
-                    else if (verRatio > 1 - oriCornerPosRatio.y)
-                    {
-                        verRatio = Mathf.Lerp(1 - cornerPosRatio.y, 1, (verRatio - (1 - oriCornerPosRatio.y)) / oriCornerPosRatio.y);
-                    }
-                    else
-                    {
-                        verRatio = Mathf.Lerp(cornerPosRatio.y, 1 - cornerPosRatio.y, (verRatio - oriCornerPosRatio.y) / (1 - oriCornerPosRatio.y * 2));
-                    }
-
-                    uiVertex.position.x = horRatio * RectTrans.rect.width - RectTrans.rect.width * RectTrans.pivot.x;
-                    uiVertex.position.y = verRatio * RectTrans.rect.height - RectTrans.rect.height * RectTrans.pivot.y;
-                    //uiVertex.position.z = pos.z;
-
-                    verts[index] = uiVertex;
-                }
-            }
-
-            base.ModifyVertices(verts);
-        }
-        */
         public override void ModifyMesh(VertexHelper vertexHelper)
         {
-            if (!IsActive() || !IsDeformed || Deformer == null) return;
+            if (!IsActive()) return;
 
             // Handle additional behavior for specific Image types (e.g., Sliced or Tiled)
-            if (UIImage.type == Image.Type.Sliced || UIImage.type == Image.Type.Tiled)
+            if (AttachedImage.type == Image.Type.Sliced || AttachedImage.type == Image.Type.Tiled)
             {
-                var verts = new List<UIVertex>();
-                vertexHelper.GetUIVertexStream(verts);
+                //var verts = new List<UIVertex>();
+                vertexHelper.GetUIVertexStream(CachedVertices);
 
-                if (cornerPosRatio == Vector2.one * -1) InitializeCornerPositionRatio(verts);
+                //InitializeCornerPositionRatio();
 
-                ConstrainCornerPositionRatio();
-                AdjustVerticesForCornerRatio(verts);
+                //ConstrainCornerPositionRatio();
+                AdjustVerticesForCornerRatio(CachedVertices);
 
                 vertexHelper.Clear();
-                vertexHelper.AddUIVertexTriangleStream(verts);
+                vertexHelper.AddUIVertexTriangleStream(CachedVertices);
             }
 
             // Apply deformation from the assigned shape handler
             base.ModifyMesh(vertexHelper);
         }
 
-        private void InitializeCornerPositionRatio(List<UIVertex> verts)
+        /*
+        [ContextMenu("Reset Corner Position Ratio")]
+        public void ResetCornerPositionRatio()
         {
-            int referenceVertexIndex = ImageTypeCornerReferenceVertexIndex(UIImage.type);
-            var referenceVertex = verts[referenceVertexIndex].position;
-
-            cornerPosRatio.x = (referenceVertex.x + RectTrans.pivot.x * RectTrans.rect.width) / RectTrans.rect.width;
-            cornerPosRatio.y = (referenceVertex.y + RectTrans.pivot.y * RectTrans.rect.height) / RectTrans.rect.height;
-
-            oriCornerPosRatio = cornerPosRatio;
+            //_originalCornerPositionRatio = GetOriginalCornerPositionRatio();
+            _cornerPositionRatio = _originalCornerPositionRatio;
         }
 
+        private void InitializeCornerPositionRatio()
+        {
+            if (_originalCornerPositionRatio == -Vector2.one)
+                _originalCornerPositionRatio = GetOriginalCornerPositionRatio();
+            if (_cornerPositionRatio == -Vector2.one)
+                _cornerPositionRatio = _originalCornerPositionRatio;
+        }
 
         private void ConstrainCornerPositionRatio()
         {
-            cornerPosRatio.x = Mathf.Clamp(cornerPosRatio.x, 0, 0.5f);
-            cornerPosRatio.y = Mathf.Clamp(cornerPosRatio.y, 0, 0.5f);
+            _cornerPositionRatio.x = Mathf.Clamp(_cornerPositionRatio.x, 0, 0.5f);
+            _cornerPositionRatio.y = Mathf.Clamp(_cornerPositionRatio.y, 0, 0.5f);
+        }
+        */
+
+        private Vector2 GetOriginalCornerPositionRatio()
+        {
+            int referenceVertexIndex = ImageTypeCornerReferenceVertexIndex(AttachedImage.type);
+            var referenceVertex = CachedVertices[referenceVertexIndex].position;
+
+            var rect = RectTrans.rect;
+            var pivot = RectTrans.pivot;
+            var x = (referenceVertex.x + pivot.x * rect.width) / rect.width;
+            var y = (referenceVertex.y + pivot.y * rect.height) / rect.height;
+
+            return new Vector2(x, y);
         }
 
         private void AdjustVerticesForCornerRatio(List<UIVertex> verts)
@@ -154,8 +85,8 @@ namespace TarasK8.UI.Deformation
                 float verticalRatio = (vertex.position.y + RectTrans.rect.height * RectTrans.pivot.y) / RectTrans.rect.height;
 
                 // Adjust ratios based on corner positions
-                horizontalRatio = AdjustRatio(horizontalRatio, oriCornerPosRatio.x, cornerPosRatio.x);
-                verticalRatio = AdjustRatio(verticalRatio, oriCornerPosRatio.y, cornerPosRatio.y);
+                horizontalRatio = AdjustRatio(horizontalRatio, _originalCornerPositionRatio.x, _cornerPositionRatio.x);
+                verticalRatio = AdjustRatio(verticalRatio, _originalCornerPositionRatio.y, _cornerPositionRatio.y);
 
                 // Update vertex position
                 vertex.position.x = horizontalRatio * RectTrans.rect.width - RectTrans.rect.width * RectTrans.pivot.x;
@@ -164,7 +95,7 @@ namespace TarasK8.UI.Deformation
                 verts[i] = vertex;
             }
         }
-
+        
         private float AdjustRatio(float ratio, float originalCorner, float targetCorner)
         {
             if (ratio < originalCorner)

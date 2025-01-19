@@ -13,24 +13,18 @@ namespace TarasK8.UI.Deformation
     [AddComponentMenu("Optimized UI/Effects/Deformable Graphic")]
     public class DeformableGraphic : BaseMeshEffect
     {
-        [SerializeField] private bool _isDeformed = true;
-        [SerializeField, Range(1f, 130f)] private float _widthResolution = 5.0f;
-        [SerializeField, Range(1f, 130f)] private float _heightResolution = 5.0f;
-        [SerializeField] private Graphic _targetGraphic;
+        [SerializeField, Range(1f, 30f)] private float _widthResolution = 5.0f;
+        [SerializeField, Range(1f, 30f)] private float _heightResolution = 5.0f;
         [SerializeField] private MonoBehaviour _deformer; // Expect an implementation of IDeformer
-        
-        static readonly ProfilerMarker s_PreparePerfMarker = new("MySystem.Mesh Generation");
 
-        public bool IsDeformed { get => _isDeformed; set => _isDeformed = value; }
-        public Graphic Graphic => _targetGraphic;
-        public IDeformer Deformer => _deformer as IDeformer;
-        public RectTransform RectTrans => _targetGraphic.rectTransform;
-        
+        private bool _isUpdateRequired = true;
         private readonly List<UIVertex> _cachedQuads = new();
-        private readonly List<UIVertex> _cachedVertices = new();
+        protected readonly List<UIVertex> CachedVertices = new();
+        private static readonly ProfilerMarker _preparePerfMarker = new("MySystem.Mesh Generation");
 
-        [SerializeField] private bool _isUpdateRequired = true;
-
+        public IDeformer Deformer => _deformer as IDeformer;
+        public RectTransform RectTrans => graphic.rectTransform;
+        
         protected override void Awake()
         {
             base.Awake();
@@ -40,7 +34,7 @@ namespace TarasK8.UI.Deformation
 
         public override void ModifyMesh(Mesh mesh)
         {
-            if (!IsActive() || !_isDeformed || Deformer == null) return;
+            if (!IsActive()) return;
 
             using var vh = new VertexHelper(mesh);
             ModifyMesh(vh);
@@ -49,22 +43,22 @@ namespace TarasK8.UI.Deformation
 
         public override void ModifyMesh(VertexHelper vh)
         {
-            if (!IsActive() || !_isDeformed || Deformer == null)
+            if (!IsActive())
                 return;
 
             if (true)
             {
-                _cachedVertices.Clear();
-                vh.GetUIVertexStream(_cachedVertices);
-                ModifyVertices(_cachedVertices);
+                CachedVertices.Clear();
+                vh.GetUIVertexStream(CachedVertices);
+                ModifyVertices(CachedVertices);
                 _isUpdateRequired = false;
             }
 
             vh.Clear();
-            vh.AddUIVertexTriangleStream(_cachedVertices);
+            vh.AddUIVertexTriangleStream(CachedVertices);
         }
 
-        protected virtual void ModifyVertices(List<UIVertex> verts)
+        private void ModifyVertices(List<UIVertex> verts)
         {
             if (!IsActive())
                 return;
@@ -72,7 +66,7 @@ namespace TarasK8.UI.Deformation
             //Debug.Log("Modify Vertices");
             TessellateGraphic(verts);
 
-            if (!_isDeformed)
+            if (!enabled)
             {
                 return;
             }
@@ -87,10 +81,12 @@ namespace TarasK8.UI.Deformation
                 var vertPos = uiVertex.position;
                 float horRatio = (vertPos.x + rect.width * RectTrans.pivot.x) / rect.width;
                 float verRatio = (vertPos.y + rect.height * RectTrans.pivot.y) / rect.height;
-                
-                Vector3 pos = Deformer.GetPoint(horRatio, verRatio);
 
-                uiVertex.position = pos;
+                if (Deformer != null)
+                {
+                    Vector3 pos = Deformer.GetPoint(horRatio, verRatio);
+                    uiVertex.position = pos;
+                }
 
                 verts[index] = uiVertex;
             }
@@ -174,12 +170,12 @@ namespace TarasK8.UI.Deformation
                     float xPlusOneRatio = (float)(x + 1) / widthQuadEdgeNum;
                     float yPlusOneRatio = (float)(y + 1) / heightQuadEdgeNum;
 
-                    s_PreparePerfMarker.Begin();
+                    _preparePerfMarker.Begin();
                     quads[quads.Count - 4] = VertexBerp(vBottomLeft, vTopLeft, vTopRight, vBottomRight, xRatio, yRatio);
                     quads[quads.Count - 3] = VertexBerp(vBottomLeft, vTopLeft, vTopRight, vBottomRight, xRatio, yPlusOneRatio);
                     quads[quads.Count - 2] = VertexBerp(vBottomLeft, vTopLeft, vTopRight, vBottomRight, xPlusOneRatio, yPlusOneRatio);
                     quads[quads.Count - 1] = VertexBerp(vBottomLeft, vTopLeft, vTopRight, vBottomRight, xPlusOneRatio, yRatio);
-                    s_PreparePerfMarker.End();
+                    _preparePerfMarker.End();
 
                 }
             }
