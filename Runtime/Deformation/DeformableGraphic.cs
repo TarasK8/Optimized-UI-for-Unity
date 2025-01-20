@@ -15,20 +15,17 @@ namespace TarasK8.UI.Deformation
     {
         [SerializeField, Range(1f, 30f)] private float _widthResolution = 5.0f;
         [SerializeField, Range(1f, 30f)] private float _heightResolution = 5.0f;
-        [SerializeField] private MonoBehaviour _deformer; // Expect an implementation of IDeformer
+        [SerializeField] private List<BaseDeformer> _deformers; // Expect an implementation of BaseDeformer
 
         private bool _isUpdateRequired = true;
         private readonly List<UIVertex> _cachedQuads = new();
         protected readonly List<UIVertex> CachedVertices = new();
         private static readonly ProfilerMarker _preparePerfMarker = new("MySystem.Mesh Generation");
-
-        public IDeformer Deformer => _deformer as IDeformer;
         public RectTransform RectTrans => graphic.rectTransform;
         
         protected override void Awake()
         {
             base.Awake();
-            ValidateDeformer();
             _isUpdateRequired = true;
         }
 
@@ -72,32 +69,30 @@ namespace TarasK8.UI.Deformation
             }
 
             var rect = RectTrans.rect;
+            var pivot = RectTrans.pivot;
 
             for (int index = 0; index < verts.Count; index++)
             {
                 var uiVertex = verts[index];
-
-                // finding the horizontal ratio position (0.0 - 1.0) of a vertex
-                var vertPos = uiVertex.position;
-                float horRatio = (vertPos.x + rect.width * RectTrans.pivot.x) / rect.width;
-                float verRatio = (vertPos.y + rect.height * RectTrans.pivot.y) / rect.height;
-
-                if (Deformer != null)
+                
+                if (_deformers != null && _deformers.Count > 0)
                 {
-                    Vector3 pos = Deformer.GetPoint(horRatio, verRatio);
-                    uiVertex.position = pos;
+                    // finding the horizontal ratio position (0.0 - 1.0) of a vertex
+                    var vertPos = uiVertex.position;
+
+                    foreach (var deformer in _deformers)
+                    {
+                        float horRatio = (vertPos.x + rect.width * pivot.x) / rect.width;
+                        float verRatio = (vertPos.y + rect.height * pivot.y) / rect.height;
+                        
+                        if(deformer != null && deformer.enabled)
+                            vertPos = deformer.DeformPoint(horRatio, verRatio);
+                    }
+
+                    uiVertex.position = vertPos;
                 }
 
                 verts[index] = uiVertex;
-            }
-        }
-
-        private void ValidateDeformer()
-        {
-            if (_deformer != null && !(_deformer is IDeformer))
-            {
-                Debug.LogError($"{_deformer.GetType().Name} must implement IDeformer.");
-                _deformer = null;
             }
         }
         

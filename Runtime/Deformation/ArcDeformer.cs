@@ -6,7 +6,7 @@ namespace TarasK8.UI.Deformation
     [RequireComponent(typeof(RectTransform))]
     [DisallowMultipleComponent]
     [ExecuteAlways]
-    public class ArcDeformer : MonoBehaviour, IDeformer
+    public class ArcDeformer : BaseDeformer
     {
         [SerializeField, Range(0f, 360f)] private float _lenght = 360f;
         [SerializeField] private float _startAngle;
@@ -32,22 +32,31 @@ namespace TarasK8.UI.Deformation
             }
         }
 #endif
+        
+        private void OnEnable()
+        {
+            UpdateTransform();
+        }
 
-        public Vector3 GetPoint(float xTime, float yTime)
+        private void OnDisable()
+        {
+            UpdateTransform();
+        }
+
+        public override Vector2 DeformPoint(float xTime, float yTime)
         {
             float angle = Mathf.Lerp(0f, _lenght, xTime) + _startAngle;
-            var up = CalculatePoint(angle, _radius + _thickness);
-            var down = CalculatePoint(angle, _radius);
-            var result = Vector3.LerpUnclamped(up, down, yTime);
+            var up = CalculateAnglePoint(angle, _radius + _thickness);
+            var down = CalculateAnglePoint(angle, _radius);
+            var result = Vector2.LerpUnclamped(up, down, yTime);
             return result;
         }
 
-        private Vector3 CalculatePoint(float angle, float radius)
+        private Vector2 CalculateAnglePoint(float angle, float radius)
         {
             float x = radius * Mathf.Cos(angle / Mathf.Rad2Deg);
             float y = radius * Mathf.Sin(angle / Mathf.Rad2Deg);
-            float z = 0f;
-            return new Vector3(x, y, z);
+            return new Vector2(x, y);
         }
 
         private float CalculateArcLenght()
