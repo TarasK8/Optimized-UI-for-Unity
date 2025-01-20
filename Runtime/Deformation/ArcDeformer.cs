@@ -17,8 +17,9 @@ namespace TarasK8.UI.Deformation
 #if UNITY_EDITOR
         private bool _editorUpdate = true;
 
-        private void OnValidate()
+        protected override void OnValidate()
         {
+            base.OnValidate();
             _fLenght = CalculateArcLenght();
             _editorUpdate = true;
         }
@@ -45,7 +46,7 @@ namespace TarasK8.UI.Deformation
 
         public override Vector2 DeformPoint(float xTime, float yTime)
         {
-            float angle = Mathf.Lerp(0f, _lenght, xTime) + _startAngle;
+            float angle = Mathf.LerpUnclamped(0f, _lenght, xTime) + _startAngle;
             var up = CalculateAnglePoint(angle, _radius + _thickness);
             var down = CalculateAnglePoint(angle, _radius);
             var result = Vector2.LerpUnclamped(up, down, yTime);

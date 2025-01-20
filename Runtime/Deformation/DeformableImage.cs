@@ -10,24 +10,24 @@ namespace TarasK8.UI.Deformation
     [ExecuteAlways]
     public class DeformableImage : DeformableGraphic
     {
-        private readonly Vector2 _cornerPositionRatio = new Vector2(0.1f, 0.1f); // -1 indicates unset
-        private readonly Vector2 _originalCornerPositionRatio = new Vector2(0.1f, 0.1f);
+        private readonly Vector2 _cornerPositionRatio = new(0.1f, 0.1f);
+        private readonly Vector2 _originalCornerPositionRatio = new(0.1f, 0.1f);
 
         private Image AttachedImage => (Image)graphic;
 
         public override void ModifyMesh(VertexHelper vertexHelper)
         {
+            //graphic.
             if (!IsActive()) return;
 
             // Handle additional behavior for specific Image types (e.g., Sliced or Tiled)
-            if (AttachedImage.type == Image.Type.Sliced || AttachedImage.type == Image.Type.Tiled)
+            if (IsUpdateRequired && AttachedImage.type == Image.Type.Sliced || AttachedImage.type == Image.Type.Tiled)
             {
-                //var verts = new List<UIVertex>();
                 vertexHelper.GetUIVertexStream(CachedVertices);
 
                 //InitializeCornerPositionRatio();
-
                 //ConstrainCornerPositionRatio();
+
                 AdjustVerticesForCornerRatio(CachedVertices);
 
                 vertexHelper.Clear();
@@ -59,7 +59,6 @@ namespace TarasK8.UI.Deformation
             _cornerPositionRatio.x = Mathf.Clamp(_cornerPositionRatio.x, 0, 0.5f);
             _cornerPositionRatio.y = Mathf.Clamp(_cornerPositionRatio.y, 0, 0.5f);
         }
-        */
 
         private Vector2 GetOriginalCornerPositionRatio()
         {
@@ -73,6 +72,7 @@ namespace TarasK8.UI.Deformation
 
             return new Vector2(x, y);
         }
+        */
 
         private void AdjustVerticesForCornerRatio(List<UIVertex> verts)
         {

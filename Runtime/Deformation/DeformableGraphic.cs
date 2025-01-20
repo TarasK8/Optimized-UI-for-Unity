@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.Collections;
 using Unity.Jobs;
 using Unity.Profiling;
 using UnityEngine;
@@ -13,20 +14,44 @@ namespace TarasK8.UI.Deformation
     [AddComponentMenu("Optimized UI/Effects/Deformable Graphic")]
     public class DeformableGraphic : BaseMeshEffect
     {
+        [SerializeField] private bool _liveUpdate = false;
+        [SerializeField] private bool _subdivide = true;
         [SerializeField, Range(1f, 30f)] private float _widthResolution = 5.0f;
         [SerializeField, Range(1f, 30f)] private float _heightResolution = 5.0f;
         [SerializeField] private List<BaseDeformer> _deformers; // Expect an implementation of BaseDeformer
 
         private bool _isUpdateRequired = true;
-        private readonly List<UIVertex> _cachedQuads = new();
+        protected bool IsUpdateRequired => _isUpdateRequired;
         protected readonly List<UIVertex> CachedVertices = new();
+        private readonly List<UIVertex> _cachedQuads = new();
         private static readonly ProfilerMarker _preparePerfMarker = new("MySystem.Mesh Generation");
         public RectTransform RectTrans => graphic.rectTransform;
+        
         
         protected override void Awake()
         {
             base.Awake();
             _isUpdateRequired = true;
+        }
+
+        protected override void OnValidate()
+        {
+            base.OnValidate();
+            ForceRebuild();
+        }
+
+        public void Rebuild()
+        {
+            _isUpdateRequired = true;
+        }
+
+        public void ForceRebuild()
+        {
+            Rebuild();
+            if (graphic.enabled)
+            {
+                graphic.SetVerticesDirty();
+            }
         }
 
         public override void ModifyMesh(Mesh mesh)
@@ -42,15 +67,15 @@ namespace TarasK8.UI.Deformation
         {
             if (!IsActive())
                 return;
-
-            if (true)
+            
+            if (_isUpdateRequired)
             {
                 CachedVertices.Clear();
                 vh.GetUIVertexStream(CachedVertices);
                 ModifyVertices(CachedVertices);
                 _isUpdateRequired = false;
             }
-
+            
             vh.Clear();
             vh.AddUIVertexTriangleStream(CachedVertices);
         }
@@ -61,11 +86,9 @@ namespace TarasK8.UI.Deformation
                 return;
 
             //Debug.Log("Modify Vertices");
-            TessellateGraphic(verts);
-
-            if (!enabled)
+            if (_subdivide)
             {
-                return;
+                TessellateGraphic(verts);
             }
 
             var rect = RectTrans.rect;
@@ -144,35 +167,25 @@ namespace TarasK8.UI.Deformation
 
             int heightQuadEdgeNum = Mathf.Max(1, Mathf.CeilToInt((vTopLeft.position - vBottomLeft.position).magnitude / quadSize.y));
             int widthQuadEdgeNum = Mathf.Max(1, Mathf.CeilToInt((vTopRight.position - vTopLeft.position).magnitude / quadSize.x));
-            //Debug.Log($"TessellateQuad {index}; size: {heightQuadEdgeNum} * {widthQuadEdgeNum}");
-
-            //heightQuadEdgeNum = Mathf.Max(1, _quadEdgeNums.y);
-            //widthQuadEdgeNum = Mathf.Max(1, _quadEdgeNums.x);
 
             int quadIdx = 0;
+            
+            int count = widthQuadEdgeNum * heightQuadEdgeNum;
 
-            for (int x = 0; x < widthQuadEdgeNum; x++)
+            for (int i = 0; i < count; i++)
             {
-                for (int y = 0; y < heightQuadEdgeNum; y++, quadIdx++)
-                {
-                    quads.Add(new UIVertex());
-                    quads.Add(new UIVertex());
-                    quads.Add(new UIVertex());
-                    quads.Add(new UIVertex());
-
-                    float xRatio = (float)x / widthQuadEdgeNum;
-                    float yRatio = (float)y / heightQuadEdgeNum;
-                    float xPlusOneRatio = (float)(x + 1) / widthQuadEdgeNum;
-                    float yPlusOneRatio = (float)(y + 1) / heightQuadEdgeNum;
-
-                    _preparePerfMarker.Begin();
-                    quads[quads.Count - 4] = VertexBerp(vBottomLeft, vTopLeft, vTopRight, vBottomRight, xRatio, yRatio);
-                    quads[quads.Count - 3] = VertexBerp(vBottomLeft, vTopLeft, vTopRight, vBottomRight, xRatio, yPlusOneRatio);
-                    quads[quads.Count - 2] = VertexBerp(vBottomLeft, vTopLeft, vTopRight, vBottomRight, xPlusOneRatio, yPlusOneRatio);
-                    quads[quads.Count - 1] = VertexBerp(vBottomLeft, vTopLeft, vTopRight, vBottomRight, xPlusOneRatio, yRatio);
-                    _preparePerfMarker.End();
-
-                }
+                int x = i / heightQuadEdgeNum;
+                int y = i % heightQuadEdgeNum;
+                
+                float xRatio = (float)x / widthQuadEdgeNum;
+                float yRatio = (float)y / heightQuadEdgeNum;
+                float xPlusOneRatio = (float)(x + 1) / widthQuadEdgeNum;
+                float yPlusOneRatio = (float)(y + 1) / heightQuadEdgeNum;
+                
+                quads.Add(VertexBerp(vBottomLeft, vTopLeft, vTopRight, vBottomRight, xRatio, yRatio));
+                quads.Add(VertexBerp(vBottomLeft, vTopLeft, vTopRight, vBottomRight, xRatio, yPlusOneRatio));
+                quads.Add(VertexBerp(vBottomLeft, vTopLeft, vTopRight, vBottomRight, xPlusOneRatio, yPlusOneRatio));
+                quads.Add(VertexBerp(vBottomLeft, vTopLeft, vTopRight, vBottomRight, xPlusOneRatio, yRatio));
             }
         }
         
@@ -187,14 +200,13 @@ namespace TarasK8.UI.Deformation
         {
             var tmpUIVertex = new UIVertex
             {
-                position = Vector3.Lerp(a.position, b.position, time),
-                normal = Vector3.Lerp(a.normal, b.normal, time),
-                tangent = Vector3.Lerp(a.tangent, b.tangent, time),
-                uv0 = Vector2.Lerp(a.uv0, b.uv0, time),
-                uv1 = Vector2.Lerp(a.uv1, b.uv1, time),
-                color = Color.Lerp(a.color, b.color, time)
+                position = Vector3.LerpUnclamped(a.position, b.position, time),
+                normal = Vector3.LerpUnclamped(a.normal, b.normal, time),
+                tangent = Vector3.LerpUnclamped(a.tangent, b.tangent, time),
+                uv0 = Vector2.LerpUnclamped(a.uv0, b.uv0, time),
+                uv1 = Vector2.LerpUnclamped(a.uv1, b.uv1, time),
+                color = Color.LerpUnclamped(a.color, b.color, time)
             };
-
             return tmpUIVertex;
         }
     }
