@@ -4,6 +4,7 @@ using UnityEngine.Splines;
 
 namespace TarasK8.UI.Deformation
 {
+    [AddComponentMenu("Optimized UI/Deformation/Spline Deformer")]
     public class SplineDeformer : BaseDeformer
     {
         [SerializeField] private SplineContainer _curves;

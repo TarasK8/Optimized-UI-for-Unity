@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace TarasK8.UI.Deformation
 {
+    [AddComponentMenu("Optimized UI/Deformation/Arc Deformer")]
     [RequireComponent(typeof(RectTransform))]
     [DisallowMultipleComponent]
     [ExecuteAlways]

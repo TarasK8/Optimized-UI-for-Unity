@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace TarasK8.UI
 {
+    [AddComponentMenu("Optimized UI/Deformation/Shift Deformer")]
     public class ShiftDeformer : BaseDeformer
     {
         [SerializeField, Range(-100f, 100f)] private float _horizontal;

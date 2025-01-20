@@ -1,9 +1,6 @@
 using System.Collections.Generic;
-using Unity.Collections;
-using Unity.Jobs;
 using Unity.Profiling;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace TarasK8.UI.Deformation
@@ -11,7 +8,7 @@ namespace TarasK8.UI.Deformation
     [RequireComponent(typeof(RectTransform))]
     [RequireComponent(typeof(Graphic))]
     [DisallowMultipleComponent]
-    [AddComponentMenu("Optimized UI/Effects/Deformable Graphic")]
+    [AddComponentMenu("Optimized UI/Deformation/Deformable Graphic")]
     public class DeformableGraphic : BaseMeshEffect
     {
         [SerializeField] private bool _liveUpdate = false;
@@ -24,9 +21,9 @@ namespace TarasK8.UI.Deformation
         protected bool IsUpdateRequired => _isUpdateRequired;
         protected readonly List<UIVertex> CachedVertices = new();
         private readonly List<UIVertex> _cachedQuads = new();
-        private static readonly ProfilerMarker _preparePerfMarker = new("MySystem.Mesh Generation");
+        private static readonly ProfilerMarker _tessellationMarker = new("Deformable Graphic.Mesh Tessellation");
+        private static readonly ProfilerMarker _deformationMarker = new("Deformable Graphic.Deformation");
         public RectTransform RectTrans => graphic.rectTransform;
-        
         
         protected override void Awake()
         {
@@ -68,7 +65,7 @@ namespace TarasK8.UI.Deformation
             if (!IsActive())
                 return;
             
-            if (_isUpdateRequired)
+            if (_isUpdateRequired || _liveUpdate)
             {
                 CachedVertices.Clear();
                 vh.GetUIVertexStream(CachedVertices);
@@ -88,9 +85,12 @@ namespace TarasK8.UI.Deformation
             //Debug.Log("Modify Vertices");
             if (_subdivide)
             {
+                _tessellationMarker.Begin();
                 TessellateGraphic(verts);
+                _tessellationMarker.End();
             }
 
+            _deformationMarker.Begin();
             var rect = RectTrans.rect;
             var pivot = RectTrans.pivot;
 
@@ -117,6 +117,7 @@ namespace TarasK8.UI.Deformation
 
                 verts[index] = uiVertex;
             }
+            _deformationMarker.End();
         }
         
         private void TessellateGraphic(List<UIVertex> verts)
@@ -177,26 +178,31 @@ namespace TarasK8.UI.Deformation
                 int x = i / heightQuadEdgeNum;
                 int y = i % heightQuadEdgeNum;
                 
+                quads.Add(new UIVertex());
+                quads.Add(new UIVertex());
+                quads.Add(new UIVertex());
+                quads.Add(new UIVertex());
+                
                 float xRatio = (float)x / widthQuadEdgeNum;
                 float yRatio = (float)y / heightQuadEdgeNum;
                 float xPlusOneRatio = (float)(x + 1) / widthQuadEdgeNum;
                 float yPlusOneRatio = (float)(y + 1) / heightQuadEdgeNum;
                 
-                quads.Add(VertexBerp(vBottomLeft, vTopLeft, vTopRight, vBottomRight, xRatio, yRatio));
-                quads.Add(VertexBerp(vBottomLeft, vTopLeft, vTopRight, vBottomRight, xRatio, yPlusOneRatio));
-                quads.Add(VertexBerp(vBottomLeft, vTopLeft, vTopRight, vBottomRight, xPlusOneRatio, yPlusOneRatio));
-                quads.Add(VertexBerp(vBottomLeft, vTopLeft, vTopRight, vBottomRight, xPlusOneRatio, yRatio));
+                quads[quads.Count - 4] = VertexBerp(vBottomLeft, vTopLeft, vTopRight, vBottomRight, xRatio, yRatio);
+                quads[quads.Count - 3] = VertexBerp(vBottomLeft, vTopLeft, vTopRight, vBottomRight, xRatio, yPlusOneRatio);
+                quads[quads.Count - 2] = VertexBerp(vBottomLeft, vTopLeft, vTopRight, vBottomRight, xPlusOneRatio, yPlusOneRatio);
+                quads[quads.Count - 1] = VertexBerp(vBottomLeft, vTopLeft, vTopRight, vBottomRight, xPlusOneRatio, yRatio);
             }
         }
         
-        private UIVertex VertexBerp(UIVertex vBottomLeft, UIVertex vTopLeft, UIVertex vTopRight, UIVertex vBottomRight, float xTime, float yTime)
+        private static UIVertex VertexBerp(UIVertex vBottomLeft, UIVertex vTopLeft, UIVertex vTopRight, UIVertex vBottomRight, float xTime, float yTime)
         {
             var topX = VertexLerp(vTopLeft, vTopRight, xTime);
             var bottomX = VertexLerp(vBottomLeft, vBottomRight, xTime);
             return VertexLerp(bottomX, topX, yTime);
         }
         
-        private UIVertex VertexLerp(UIVertex a, UIVertex b, float time)
+        private static UIVertex VertexLerp(UIVertex a, UIVertex b, float time)
         {
             var tmpUIVertex = new UIVertex
             {
