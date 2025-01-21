@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Unity.Collections;
+using Unity.Jobs;
 using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.UI;
@@ -120,6 +121,7 @@ namespace TarasK8.UI.Deformation
         {
             _tessellationMarker.Begin();
             
+            _cachedQuads.Clear();
             for (int v = 0; v < verts.Count; v += 6)
             {
                 _cachedQuads.Add(verts[v]); // bottom left
@@ -129,12 +131,17 @@ namespace TarasK8.UI.Deformation
                 _cachedQuads.Add(verts[v + 4]); // bottom right
                 // verts[5] is redundant, bottom left
             }
+            Debug.Log(verts.Count);
+
+            int originalQuadsCount = verts.Count / 6;
+            int originalVerticesCount = originalQuadsCount * 4;
+            Debug.Log(originalVerticesCount);
             
             //NativeArray<UIVertex> quads = new NativeArray<UIVertex>(verts.Count * 4, Allocator.TempJob);
-            
 
             _tessellateQuadMarker.Begin();
             int originalQuadNumbers = _cachedQuads.Count / 4;
+            Debug.Log(originalQuadNumbers);
             for (int q = 0; q < originalQuadNumbers; q++)
             {
                 TessellateQuad(_cachedQuads, q * 4);
@@ -153,18 +160,16 @@ namespace TarasK8.UI.Deformation
                 verts.Add(_cachedQuads[q + 3]);
                 verts.Add(_cachedQuads[q]);
             }
-
-            _cachedQuads.Clear();
             
             _tessellationMarker.End();
         }
         
-        private void TessellateQuad(List<UIVertex> quads, int index)
+        private void TessellateQuad(List<UIVertex> quads, int originalQuadIndex)
         {
-            UIVertex vBottomLeft = quads[index];
-            UIVertex vTopLeft = quads[index + 1];
-            UIVertex vTopRight = quads[index + 2];
-            UIVertex vBottomRight = quads[index + 3];
+            UIVertex vBottomLeft = quads[originalQuadIndex];
+            UIVertex vTopLeft = quads[originalQuadIndex + 1];
+            UIVertex vTopRight = quads[originalQuadIndex + 2];
+            UIVertex vBottomRight = quads[originalQuadIndex + 3];
 
             Vector2 quadSize = new Vector2(100f / _widthResolution, 100f / _heightResolution);
 
@@ -216,6 +221,59 @@ namespace TarasK8.UI.Deformation
                 color = Color.LerpUnclamped(a.color, b.color, time)
             };
             return tmpUIVertex;
+        }
+        
+        public struct TessellationJob : IJob
+        {
+            [ReadOnly] public float WidthQuadEdgeNum;
+            [ReadOnly] public float HeightQuadEdgeNum;
+            public NativeArray<UIVertex> Quads;
+            
+            public void Execute()
+            {
+                
+            }
+        }
+
+        public struct OriginalQuad
+        {
+            public readonly UIVertex BottomLeft;
+            public readonly UIVertex TopLeft;
+            public readonly UIVertex TopRight;
+            public readonly UIVertex BottomRight;
+            public readonly int WidthQuadEdgeNum;
+            public readonly int HeightQuadEdgeNum;
+
+            public OriginalQuad(List<UIVertex> quads, int index, Vector2 size)
+            {
+                BottomLeft = quads[index];
+                TopLeft = quads[index + 1];
+                TopRight = quads[index + 2];
+                BottomRight = quads[index + 3];
+                HeightQuadEdgeNum = Mathf.Max(1, Mathf.CeilToInt((TopLeft.position - BottomLeft.position).magnitude / size.y));
+                WidthQuadEdgeNum = Mathf.Max(1, Mathf.CeilToInt((TopRight.position - TopLeft.position).magnitude / size.x));
+            }
+
+            public UIVertex VertexBerp(float xTime, float yTime)
+            {
+                var topX = VertexLerp(TopLeft, TopRight, xTime);
+                var bottomX = VertexLerp(BottomLeft, BottomRight, xTime);
+                return VertexLerp(bottomX, topX, yTime);
+            }
+            
+            private UIVertex VertexLerp(UIVertex a, UIVertex b, float time)
+            {
+                var tmpUIVertex = new UIVertex
+                {
+                    position = Vector3.LerpUnclamped(a.position, b.position, time),
+                    normal = Vector3.LerpUnclamped(a.normal, b.normal, time),
+                    tangent = Vector3.LerpUnclamped(a.tangent, b.tangent, time),
+                    uv0 = Vector2.LerpUnclamped(a.uv0, b.uv0, time),
+                    uv1 = Vector2.LerpUnclamped(a.uv1, b.uv1, time),
+                    color = Color.LerpUnclamped(a.color, b.color, time)
+                };
+                return tmpUIVertex;
+            }
         }
     }
 }
