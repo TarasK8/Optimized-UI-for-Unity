@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.Collections;
 using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.UI;
@@ -22,6 +23,7 @@ namespace TarasK8.UI.Deformation
         protected readonly List<UIVertex> CachedVertices = new();
         private readonly List<UIVertex> _cachedQuads = new();
         private static readonly ProfilerMarker _tessellationMarker = new("Deformable Graphic.Mesh Tessellation");
+        private static readonly ProfilerMarker _tessellateQuadMarker = new("Mesh Tessellation.TessellateQuad");
         private static readonly ProfilerMarker _deformationMarker = new("Deformable Graphic.Deformation");
         public RectTransform RectTrans => graphic.rectTransform;
         
@@ -69,7 +71,12 @@ namespace TarasK8.UI.Deformation
             {
                 CachedVertices.Clear();
                 vh.GetUIVertexStream(CachedVertices);
-                ModifyVertices(CachedVertices);
+                
+                if (_subdivide)
+                    TessellateGraphic(CachedVertices);
+                
+                DeformVertices(CachedVertices);
+                
                 _isUpdateRequired = false;
             }
             
@@ -77,19 +84,8 @@ namespace TarasK8.UI.Deformation
             vh.AddUIVertexTriangleStream(CachedVertices);
         }
 
-        private void ModifyVertices(List<UIVertex> verts)
+        private void DeformVertices(List<UIVertex> verts)
         {
-            if (!IsActive())
-                return;
-
-            //Debug.Log("Modify Vertices");
-            if (_subdivide)
-            {
-                _tessellationMarker.Begin();
-                TessellateGraphic(verts);
-                _tessellationMarker.End();
-            }
-
             _deformationMarker.Begin();
             var rect = RectTrans.rect;
             var pivot = RectTrans.pivot;
@@ -119,9 +115,11 @@ namespace TarasK8.UI.Deformation
             }
             _deformationMarker.End();
         }
-        
+
         private void TessellateGraphic(List<UIVertex> verts)
         {
+            _tessellationMarker.Begin();
+            
             for (int v = 0; v < verts.Count; v += 6)
             {
                 _cachedQuads.Add(verts[v]); // bottom left
@@ -131,20 +129,22 @@ namespace TarasK8.UI.Deformation
                 _cachedQuads.Add(verts[v + 4]); // bottom right
                 // verts[5] is redundant, bottom left
             }
+            
+            //NativeArray<UIVertex> quads = new NativeArray<UIVertex>(verts.Count * 4, Allocator.TempJob);
+            
 
+            _tessellateQuadMarker.Begin();
             int originalQuadNumbers = _cachedQuads.Count / 4;
             for (int q = 0; q < originalQuadNumbers; q++)
             {
                 TessellateQuad(_cachedQuads, q * 4);
             }
-
-            // remove original quads
-            _cachedQuads.RemoveRange(0, originalQuadNumbers * 4);
-
-            verts.Clear();
+            _tessellateQuadMarker.End();
 
             // process new quads and turn them into triangles
-            for (int q = 0; q < _cachedQuads.Count; q += 4)
+            verts.Clear();
+            int skipOriginalQuads = originalQuadNumbers * 4;
+            for (int q = skipOriginalQuads; q < _cachedQuads.Count; q += 4)
             {
                 verts.Add(_cachedQuads[q]);
                 verts.Add(_cachedQuads[q + 1]);
@@ -155,6 +155,8 @@ namespace TarasK8.UI.Deformation
             }
 
             _cachedQuads.Clear();
+            
+            _tessellationMarker.End();
         }
         
         private void TessellateQuad(List<UIVertex> quads, int index)
