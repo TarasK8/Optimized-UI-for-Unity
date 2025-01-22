@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Profiling;
@@ -22,9 +23,9 @@ namespace TarasK8.UI.Deformation
         private bool _isUpdateRequired = true;
         protected bool IsUpdateRequired => _isUpdateRequired;
         protected readonly List<UIVertex> CachedVertices = new();
-        private readonly List<UIVertex> _cachedQuads = new();
+        //private readonly List<UIVertex> _cachedQuads = new();
         private static readonly ProfilerMarker _tessellationMarker = new("Deformable Graphic.Mesh Tessellation");
-        private static readonly ProfilerMarker _tessellateQuadMarker = new("Mesh Tessellation.TessellateQuad");
+        private static readonly ProfilerMarker _tessellateQuadMarker = new("Mesh Tessellation.Tessellate Quad");
         private static readonly ProfilerMarker _deformationMarker = new("Deformable Graphic.Deformation");
         public RectTransform RectTrans => graphic.rectTransform;
         
@@ -121,137 +122,111 @@ namespace TarasK8.UI.Deformation
         {
             _tessellationMarker.Begin();
             
-            _cachedQuads.Clear();
+            int originalQuadsCount = verts.Count / 6;
+            int tessellatedCount = 0;
+            Vector2 quadSize = new Vector2(100f / _widthResolution, 100f / _heightResolution);
+            NativeArray<OriginalQuad> originalQuads = new NativeArray<OriginalQuad>(originalQuadsCount, Allocator.TempJob);
             for (int v = 0; v < verts.Count; v += 6)
             {
-                _cachedQuads.Add(verts[v]); // bottom left
-                _cachedQuads.Add(verts[v + 1]); // top left
-                _cachedQuads.Add(verts[v + 2]); // top right
+                var bl = verts[v]; // bottom left
+                var tl = verts[v + 1]; // top left
+                var tr = verts[v + 2]; // top right
                 // verts[3] is redundant, top right
-                _cachedQuads.Add(verts[v + 4]); // bottom right
+                var br = verts[v + 4]; // bottom right
                 // verts[5] is redundant, bottom left
+                
+                var quad = new OriginalQuad(bl, tl, tr, br, quadSize);
+                originalQuads[v / 6] = quad;
+                tessellatedCount += quad.TessellationCount;
             }
-            Debug.Log(verts.Count);
-
-            int originalQuadsCount = verts.Count / 6;
-            int originalVerticesCount = originalQuadsCount * 4;
-            Debug.Log(originalVerticesCount);
-            
-            //NativeArray<UIVertex> quads = new NativeArray<UIVertex>(verts.Count * 4, Allocator.TempJob);
+            NativeArray<UIVertex> quads = new NativeArray<UIVertex>(tessellatedCount * 4, Allocator.TempJob);
 
             _tessellateQuadMarker.Begin();
-            int originalQuadNumbers = _cachedQuads.Count / 4;
-            Debug.Log(originalQuadNumbers);
-            for (int q = 0; q < originalQuadNumbers; q++)
+            var job = new TessellationJob()
             {
-                TessellateQuad(_cachedQuads, q * 4);
-            }
+                OriginalQuads = originalQuads,
+                Quads = quads,
+            };
+            JobHandle handle = job.Schedule();
+            handle.Complete();
+            originalQuads.Dispose();
             _tessellateQuadMarker.End();
 
             // process new quads and turn them into triangles
             verts.Clear();
-            int skipOriginalQuads = originalQuadNumbers * 4;
-            for (int q = skipOriginalQuads; q < _cachedQuads.Count; q += 4)
+            for (int i = 0; i < tessellatedCount * 4; i += 4)
             {
-                verts.Add(_cachedQuads[q]);
-                verts.Add(_cachedQuads[q + 1]);
-                verts.Add(_cachedQuads[q + 2]);
-                verts.Add(_cachedQuads[q + 2]);
-                verts.Add(_cachedQuads[q + 3]);
-                verts.Add(_cachedQuads[q]);
+                verts.Add(quads[i]);
+                verts.Add(quads[i + 1]);
+                verts.Add(quads[i + 2]);
+                verts.Add(quads[i + 2]);
+                verts.Add(quads[i + 3]);
+                verts.Add(quads[i]);
             }
-            
+            quads.Dispose();
             _tessellationMarker.End();
         }
-        
-        private void TessellateQuad(List<UIVertex> quads, int originalQuadIndex)
-        {
-            UIVertex vBottomLeft = quads[originalQuadIndex];
-            UIVertex vTopLeft = quads[originalQuadIndex + 1];
-            UIVertex vTopRight = quads[originalQuadIndex + 2];
-            UIVertex vBottomRight = quads[originalQuadIndex + 3];
 
-            Vector2 quadSize = new Vector2(100f / _widthResolution, 100f / _heightResolution);
-
-            int heightQuadEdgeNum = Mathf.Max(1, Mathf.CeilToInt((vTopLeft.position - vBottomLeft.position).magnitude / quadSize.y));
-            int widthQuadEdgeNum = Mathf.Max(1, Mathf.CeilToInt((vTopRight.position - vTopLeft.position).magnitude / quadSize.x));
-
-            int quadIdx = 0;
-            
-            int count = widthQuadEdgeNum * heightQuadEdgeNum;
-
-            for (int i = 0; i < count; i++)
-            {
-                int x = i / heightQuadEdgeNum;
-                int y = i % heightQuadEdgeNum;
-                
-                quads.Add(new UIVertex());
-                quads.Add(new UIVertex());
-                quads.Add(new UIVertex());
-                quads.Add(new UIVertex());
-                
-                float xRatio = (float)x / widthQuadEdgeNum;
-                float yRatio = (float)y / heightQuadEdgeNum;
-                float xPlusOneRatio = (float)(x + 1) / widthQuadEdgeNum;
-                float yPlusOneRatio = (float)(y + 1) / heightQuadEdgeNum;
-                
-                quads[quads.Count - 4] = VertexBerp(vBottomLeft, vTopLeft, vTopRight, vBottomRight, xRatio, yRatio);
-                quads[quads.Count - 3] = VertexBerp(vBottomLeft, vTopLeft, vTopRight, vBottomRight, xRatio, yPlusOneRatio);
-                quads[quads.Count - 2] = VertexBerp(vBottomLeft, vTopLeft, vTopRight, vBottomRight, xPlusOneRatio, yPlusOneRatio);
-                quads[quads.Count - 1] = VertexBerp(vBottomLeft, vTopLeft, vTopRight, vBottomRight, xPlusOneRatio, yRatio);
-            }
-        }
-        
-        private static UIVertex VertexBerp(UIVertex vBottomLeft, UIVertex vTopLeft, UIVertex vTopRight, UIVertex vBottomRight, float xTime, float yTime)
+        [BurstCompile]
+        private struct TessellationJob : IJob
         {
-            var topX = VertexLerp(vTopLeft, vTopRight, xTime);
-            var bottomX = VertexLerp(vBottomLeft, vBottomRight, xTime);
-            return VertexLerp(bottomX, topX, yTime);
-        }
-        
-        private static UIVertex VertexLerp(UIVertex a, UIVertex b, float time)
-        {
-            var tmpUIVertex = new UIVertex
-            {
-                position = Vector3.LerpUnclamped(a.position, b.position, time),
-                normal = Vector3.LerpUnclamped(a.normal, b.normal, time),
-                tangent = Vector3.LerpUnclamped(a.tangent, b.tangent, time),
-                uv0 = Vector2.LerpUnclamped(a.uv0, b.uv0, time),
-                uv1 = Vector2.LerpUnclamped(a.uv1, b.uv1, time),
-                color = Color.LerpUnclamped(a.color, b.color, time)
-            };
-            return tmpUIVertex;
-        }
-        
-        public struct TessellationJob : IJob
-        {
-            [ReadOnly] public float WidthQuadEdgeNum;
-            [ReadOnly] public float HeightQuadEdgeNum;
+            [ReadOnly] public NativeArray<OriginalQuad> OriginalQuads;
             public NativeArray<UIVertex> Quads;
             
             public void Execute()
             {
+                int tessellated = 0;
+                for (int i = 0; i < OriginalQuads.Length; i++)
+                {
+                    TessellateQuad(Quads, OriginalQuads[i], tessellated);
+                    tessellated += OriginalQuads[i].TessellationCount * 4;
+                }
+            }
+            
+            private static void TessellateQuad(NativeArray<UIVertex> quads, OriginalQuad quad, int startIndex)
+            {
+                int quadIdx = 0;
+            
+                for (int x = 0; x < quad.WidthQuadEdgeNum; x++)
+                {
+                    for (int y = 0; y < quad.HeightQuadEdgeNum; y++, quadIdx += 4)
+                    {
+                        float xRatio = (float)x / quad.WidthQuadEdgeNum;
+                        float yRatio = (float)y / quad.HeightQuadEdgeNum;
+                        float xPlusOneRatio = (float)(x + 1) / quad.WidthQuadEdgeNum;
+                        float yPlusOneRatio = (float)(y + 1) / quad.HeightQuadEdgeNum;
+                    
+                        var index = startIndex + quadIdx;
+                    
+                        quads[index] = quad.VertexBerp(xRatio, yRatio);
+                        quads[index + 1] = quad.VertexBerp(xRatio, yPlusOneRatio);
+                        quads[index + 2] = quad.VertexBerp(xPlusOneRatio, yPlusOneRatio);
+                        quads[index + 3] = quad.VertexBerp(xPlusOneRatio, yRatio);
                 
+                    }
+                }
             }
         }
-
+        
         public struct OriginalQuad
         {
-            public readonly UIVertex BottomLeft;
-            public readonly UIVertex TopLeft;
-            public readonly UIVertex TopRight;
-            public readonly UIVertex BottomRight;
-            public readonly int WidthQuadEdgeNum;
-            public readonly int HeightQuadEdgeNum;
+            public UIVertex BottomLeft;
+            public UIVertex TopLeft;
+            public UIVertex TopRight;
+            public UIVertex BottomRight;
+            public int WidthQuadEdgeNum;
+            public int HeightQuadEdgeNum;
+            public int TessellationCount;
 
-            public OriginalQuad(List<UIVertex> quads, int index, Vector2 size)
+            public OriginalQuad(UIVertex bottomLeft, UIVertex topLeft, UIVertex topRight, UIVertex bottomRight, Vector2 size)
             {
-                BottomLeft = quads[index];
-                TopLeft = quads[index + 1];
-                TopRight = quads[index + 2];
-                BottomRight = quads[index + 3];
+                BottomLeft = bottomLeft;
+                TopLeft = topLeft;
+                TopRight = topRight;
+                BottomRight = bottomRight;
                 HeightQuadEdgeNum = Mathf.Max(1, Mathf.CeilToInt((TopLeft.position - BottomLeft.position).magnitude / size.y));
                 WidthQuadEdgeNum = Mathf.Max(1, Mathf.CeilToInt((TopRight.position - TopLeft.position).magnitude / size.x));
+                TessellationCount = HeightQuadEdgeNum * WidthQuadEdgeNum;
             }
 
             public UIVertex VertexBerp(float xTime, float yTime)
@@ -270,7 +245,7 @@ namespace TarasK8.UI.Deformation
                     tangent = Vector3.LerpUnclamped(a.tangent, b.tangent, time),
                     uv0 = Vector2.LerpUnclamped(a.uv0, b.uv0, time),
                     uv1 = Vector2.LerpUnclamped(a.uv1, b.uv1, time),
-                    color = Color.LerpUnclamped(a.color, b.color, time)
+                    color = Color32.LerpUnclamped(a.color, b.color, time)
                 };
                 return tmpUIVertex;
             }

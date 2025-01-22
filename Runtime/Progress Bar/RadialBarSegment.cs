@@ -26,13 +26,15 @@ namespace TarasK8.UI
         public float GlobalStartAngle => GetAngleStart();
         public float GlobalEndAngle => GetAngleEnd();
 
+        private void Awake()
+        {
+            UpdateRequirements();
+        }
+
 #if UNITY_EDITOR
         private void OnValidate()
         {
-            if(!_image)
-                _image = GetComponent<Image>();
-            if(!_rectTransform)
-                _rectTransform = GetComponent<RectTransform>();
+            UpdateRequirements();
 
             _image.fillMethod = Image.FillMethod.Radial360;
             _image.fillClockwise = false;
@@ -130,6 +132,14 @@ namespace TarasK8.UI
             var result = Mathf.Repeat(angle, Circle);
             if(Mathf.Approximately(result, Circle)) return 0f;
             return result;
+        }
+
+        private void UpdateRequirements()
+        {
+            if(!_image)
+                _image = GetComponent<Image>();
+            if(!_rectTransform)
+                _rectTransform = GetComponent<RectTransform>();
         }
     }
 }
