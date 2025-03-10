@@ -14,7 +14,7 @@ namespace TarasK8.UI
         [SerializeField] private StateMachine _stateMachine;
         [SerializeField] private int _normal, _hover, _pressed, _selected, _disabled;
 
-        [SerializeField] private bool _isHover, _isPressed, _isSelected;
+        private bool _isHover, _isPressed, _isSelected;
 
 #if UNITY_EDITOR
         protected override void OnValidate()

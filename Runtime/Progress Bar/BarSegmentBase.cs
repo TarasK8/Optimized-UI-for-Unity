@@ -25,7 +25,7 @@ namespace TarasK8.UI
         
         public void SetPosition(float start, float end)
         {
-            Debug.Log(string.Format("SetPosition: start={0}, end={1}", start, end));
+            // Debug.Log(string.Format("SetPosition: start={0}, end={1}", start, end));
             if (start > end)
             {
                 (start, end) = (end, start);

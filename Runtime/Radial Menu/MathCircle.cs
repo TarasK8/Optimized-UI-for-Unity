@@ -7,22 +7,23 @@ namespace TarasK8.UI
     {
         public const float Circle = 360f;
         
-        public static float AngleToPosition(float angle)
+        public static float AngleToRatio(float angle)
         {
             float result = RepeatAngle(angle) / Circle;
             return result;
         }
 
-        public static float PositionToAngle(float value)
+        public static float RatioToAngle(float value)
         {
             return value * Circle;
         }
 
         public static float RepeatAngle(float angle)
         {
-            angle = (float)Math.Round(angle, 3); // To avoid float precision troubles
-            var result = Mathf.Repeat(angle, Circle);
-            if(Mathf.Approximately(result, Circle)) return 0f;
+            if(Mathf.Approximately(angle, 0f)) return 0f;
+            var remainder = Mathf.Floor(angle / Circle) * Circle;
+            var result = angle - remainder;
+            if(Mathf.Approximately(result, 0f)) return Circle;
             return result;
         }
     }

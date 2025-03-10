@@ -8,8 +8,6 @@ namespace TarasK8.UI
     public class RadialMenu : MonoBehaviour
     {
         [SerializeField] private List<RadialBarSegment> _radialElements;
-
-        [SerializeField] private float _inputAngle;
         
         public IReadOnlyList<RadialBarSegment> AttachedElements => _radialElements;
 
@@ -32,5 +30,7 @@ namespace TarasK8.UI
             }
             return null;
         }
+        
+        
     }
 }

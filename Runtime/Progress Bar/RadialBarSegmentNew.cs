@@ -1,28 +1,31 @@
+using System;
 using TarasK8.UI.Deformation;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace TarasK8.UI
 {
-    [AddComponentMenu("Optimized UI/Progress Bar/Radial Bar Segment")]
+    [AddComponentMenu("Optimized UI/Progress Bar/Radial Bar Segment New")]
     [DisallowMultipleComponent]
     [ExecuteInEditMode]
     [RequireComponent(typeof(RectTransform))]
     [RequireComponent(typeof(Image))]
-    public class RadialBarSegment : BarSegmentBase
+    public class RadialBarSegmentNew : BarSegmentBase
     {
+        public const float Circle = 360f;
+
         [SerializeField] private float _startAngle = 0f;
-        [SerializeField] private float _endAngle = 360f;
+        [SerializeField] private float _endAngle = 359.99f;
         [SerializeField, Range(0f, 1f)] private float _startPosition = 0f;
         [SerializeField, Range(0f, 1f)] private float _endPosition = 1f;
         
         [Header("Visualization")]
         [SerializeField] private VisualizationMethod _visualizationMethod;
-        [Space]
         [SerializeField] private ArcDeformer _arcDeformer;
-        [Space]
-        [SerializeField] private Image _image;
-        [SerializeField] private RectTransform _rectTransform;
+        
+        [HideInInspector, SerializeField] private Image _image;
+        [HideInInspector, SerializeField] private RectTransform _rectTransform;
 
         public float Length => MathCircle.RepeatAngle(_endAngle - _startAngle);
         
@@ -51,7 +54,7 @@ namespace TarasK8.UI
         {
             UpdateRequirements();
             
-            //if(_endPosition < _startPosition)
+            if(_endPosition < _startPosition)
 
             _image.fillMethod = Image.FillMethod.Radial360;
             _image.fillClockwise = false;
@@ -109,34 +112,8 @@ namespace TarasK8.UI
 
         private void ArcDeformerRebuild()
         {
-            var lengthRatio = MathCircle.AngleToRatio(Length);
-            var startRatio = Mathf.Lerp(0f, lengthRatio, Mathf.Clamp(_startPosition, 0f, _endPosition));
-            var rotation = MathCircle.RatioToAngle(startRatio) + _startAngle;
             
-            var endRatio = Mathf.Lerp(0f, lengthRatio, Mathf.Clamp(_endPosition, _startPosition, 1f));
-            var amount = endRatio - startRatio;
-            if (amount < 0f)
-                amount = endRatio - (1f - startRatio); // crutch, to prevent a bug when an element can visually disappear
-
-            _arcDeformer.StartAngle = _arcDeformer.RotationToCenter ? 0f : rotation;
-            _arcDeformer.Lenght = MathCircle.RatioToAngle(amount);
-
-            float z = _arcDeformer.RotationToCenter ? -_arcDeformer.CalculateRotationToCenter() + StartAngle : 0f;
-            var currentRotation = _rectTransform.localEulerAngles;
-            var newRotation = new Vector3(currentRotation.x, currentRotation.y, z);
-            _rectTransform.localEulerAngles = newRotation;
-
-            if (_arcDeformer.PositionToCenter)
-            {
-                _rectTransform.anchoredPosition = _arcDeformer.CalculateCenter(rotation);
-            }
-            _arcDeformer.UpdateTransform();
         }
-        
-        /*private void GetAngleAndLength(out float angle, out float lenght)
-        {
-            
-        }*/
 
         protected override void SetPositionStart(float position)
         {

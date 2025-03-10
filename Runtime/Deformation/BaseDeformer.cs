@@ -21,7 +21,7 @@ namespace TarasK8.UI.Deformation
             UpdateReferences();
             
             if(_deformableGraphic != null)
-                _deformableGraphic.ForceRebuild();
+                _deformableGraphic.Rebuild();
         }
 
         private void UpdateReferences()

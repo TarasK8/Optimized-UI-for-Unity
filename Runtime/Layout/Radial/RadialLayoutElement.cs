@@ -87,12 +87,12 @@ namespace TarasK8.UI.Layout
         {
             size = FlexBoxUtility.CalculateElementSize(_grow, _shrink, _basis, totalGrow, totalShrink, freeSpace);
 
-            _radialSegment.SetAngles(nextPosition, nextPosition + size);
+            _radialSegment.SetStartEndAngles(nextPosition, nextPosition + size);
         }
 
         public void FlexElement2(float position, float size)
         {
-            _radialSegment.SetAngles(position, position + size);
+            _radialSegment.SetStartEndAngles(position, position + size);
         }
 
         public void UpdateContainer()
