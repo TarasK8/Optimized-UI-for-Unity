@@ -83,8 +83,9 @@ namespace TarasK8.UI.Deformation
                 _editorUpdate = false;
             }
         }
+
 #endif
-        
+
         private void OnEnable()
         {
             UpdateTransform();
@@ -94,6 +95,8 @@ namespace TarasK8.UI.Deformation
         {
             UpdateTransform();
         }
+
+        public override void BeginDeform() { }
 
         public override Vector2 DeformPoint(float xTime, float yTime)
         {

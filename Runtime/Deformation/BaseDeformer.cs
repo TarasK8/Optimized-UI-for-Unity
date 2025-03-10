@@ -8,8 +8,6 @@ namespace TarasK8.UI.Deformation
         [SerializeField, HideInInspector] private DeformableGraphic _deformableGraphic;
         
         public DeformableGraphic AttachedDeformableGraphic => _deformableGraphic;
-        
-        public abstract Vector2 DeformPoint(float xTime, float yTime);
 
         protected virtual void Awake()
         {
@@ -23,6 +21,9 @@ namespace TarasK8.UI.Deformation
             if(_deformableGraphic != null)
                 _deformableGraphic.Rebuild();
         }
+
+        public abstract void BeginDeform();
+        public abstract Vector2 DeformPoint(float xTime, float yTime);
 
         private void UpdateReferences()
         {

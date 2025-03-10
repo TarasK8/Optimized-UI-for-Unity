@@ -71,7 +71,7 @@ namespace TarasK8.UI.Deformation
                 if (_subdivide)
                     TessellateGraphic(CachedVertices);
                 
-                //DeformVertices(CachedVertices);
+                // DeformVertices(CachedVertices);
                 
                 _isUpdateRequired = false;
             }
@@ -97,6 +97,8 @@ namespace TarasK8.UI.Deformation
             {
                 if (deformer == null || !deformer.enabled)
                     continue;
+                
+                deformer.BeginDeform();
                 
                 for (int index = 0; index < verts.Count; index++)
                 {
@@ -148,7 +150,7 @@ namespace TarasK8.UI.Deformation
             NativeArray<UIVertex> quads = new NativeArray<UIVertex>(newVerticesCount, Allocator.TempJob);
 
             _tessellateQuadsMarker.Begin();
-            var job = new TessellationJob()
+            var job = new TessellationJob
             {
                 OriginalQuads = originalQuads,
                 Quads = quads,
@@ -156,8 +158,6 @@ namespace TarasK8.UI.Deformation
             JobHandle handle = job.Schedule();
             handle.Complete();
             _tessellateQuadsMarker.End();
-            
-            
             
             _deformationMarker.Begin();
             if (_deformers == null || _deformers.Count == 0)
@@ -223,7 +223,21 @@ namespace TarasK8.UI.Deformation
             quads.Dispose();
             _tessellationMarker.End();
         }
-
+        
+        private static void TessellateQuad(NativeArray<UIVertex> quads, OriginalQuad quad, int startIndex)
+        {
+            for (int x = 0; x < quad.WidthQuadEdgeNum + 1; x++)
+            {
+                for (int y = 0; y < quad.HeightQuadEdgeNum + 1; y++)
+                {
+                    float xRatio = (float)x / quad.WidthQuadEdgeNum;
+                    float yRatio = (float)y / quad.HeightQuadEdgeNum;
+                    int index = startIndex + (quad.WidthQuadEdgeNum + 1) * y + x;
+                    quads[index] = quad.VertexBerp(xRatio, yRatio);
+                }
+            }
+        }
+        
         [BurstCompile]
         private struct TessellationJob : IJob
         {
@@ -237,20 +251,6 @@ namespace TarasK8.UI.Deformation
                 {
                     TessellateQuad(Quads, OriginalQuads[i], processedVertices);
                     processedVertices += OriginalQuads[i].NewVerticesCount;
-                }
-            }
-            
-            private static void TessellateQuad(NativeArray<UIVertex> quads, OriginalQuad quad, int startIndex)
-            {
-                for (int x = 0; x < quad.WidthQuadEdgeNum + 1; x++)
-                {
-                    for (int y = 0; y < quad.HeightQuadEdgeNum + 1; y++)
-                    {
-                        float xRatio = (float)x / quad.WidthQuadEdgeNum;
-                        float yRatio = (float)y / quad.HeightQuadEdgeNum;
-                        int index = startIndex + (quad.WidthQuadEdgeNum + 1) * y + x;
-                        quads[index] = quad.VertexBerp(xRatio, yRatio);
-                    }
                 }
             }
         }

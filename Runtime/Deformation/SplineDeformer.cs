@@ -9,6 +9,8 @@ namespace TarasK8.UI.Deformation
     {
         [SerializeField] private SplineContainer _curves;
 
+        public override void BeginDeform() { }
+
         public override Vector2 DeformPoint(float xTime, float yTime)
         {
             var up = _curves[0].EvaluatePosition(xTime);
